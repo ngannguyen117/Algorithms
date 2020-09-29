@@ -1,0 +1,25 @@
+{
+  "name": "algorithms",
+  "version": "1.0.0",
+  "description": "This repository presents the Javascript code implementation of the provided Algorithms and Data Structures from William Fiset @ [https://github.com/williamfiset/Algorithms](https://github.com/williamfiset/Algorithms)",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --watchAll --no-cache"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ngantxnguyen/Algorithms.git"
+  },
+  "author": "Ngan Nguyen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ngantxnguyen/Algorithms/issues"
+  },
+  "homepage": "https://github.com/ngantxnguyen/Algorithms#readme",
+  "devDependencies": {
+    "@babel/core": "^7.11.6",
+    "@babel/plugin-transform-runtime": "^7.11.5",
+    "@babel/preset-env": "^7.11.5",
+    "jest": "^26.4.2"
+  }
+}
