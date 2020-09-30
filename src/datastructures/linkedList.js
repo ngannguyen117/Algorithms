@@ -38,9 +38,9 @@
  */
 
 /**
- * Doubly Linked List that does not allow duplicate value.
+ * Doubly Linked List that allows duplicate values.
  *
- * The allowed data types in this linked list are string and number, no Objects
+ * The allowed data types in this linked list are string and number
  */
 export function DoublyLinkedList() {
   /**
@@ -58,22 +58,6 @@ export function DoublyLinkedList() {
   let length = 0; // number of nodes in the list
   let head = null;
   let tail = null;
-  const values = new Set(); // keep track of values have been added to the list
-
-  /**
-   * Check whether a value exists in the list. O(1)
-   * @param {string | number} value node's data
-   * @returns {boolean} true if it exists
-   */
-  this.contains = value => values.has(value);
-
-  /**
-   * Throw an error when there's already such a value exists in the list. O(1)
-   * @param {string | number} value
-   */
-  const checkDuplication = value => {
-    if (this.contains(value)) throw Error('Duplicate values');
-  };
 
   /**
    * Check if the index is within the valid range [0, length). O(1)
@@ -81,24 +65,6 @@ export function DoublyLinkedList() {
    */
   const validateIndex = index => {
     if (index < 0 || index >= length) throw Error('Index out of range');
-  };
-
-  /**
-   * when a new node has been added to the list, increment the length and add that value to the set values. O(1)
-   * @param {string | number} data
-   */
-  const nodeAdded = data => {
-    length++;
-    values.add(data);
-  };
-
-  /**
-   * when a new node has been removed from the list, decrement the length and delete that value to the set values. O(1)
-   * @param {string | number} data
-   */
-  const nodeRemoved = data => {
-    length--;
-    values.delete(data);
   };
 
   this.size = () => length;
@@ -129,7 +95,6 @@ export function DoublyLinkedList() {
 
     length = 0;
     head = tail = null;
-    values.clear();
   };
 
   /**
@@ -137,15 +102,13 @@ export function DoublyLinkedList() {
    * @param {string | number} data
    */
   this.addFirst = data => {
-    checkDuplication(data);
-
     if (this.isEmpty()) head = tail = new Node(data);
     else {
       head.prev = new Node(data, null, head);
       head = head.prev;
     }
 
-    nodeAdded(data);
+    length++;
   };
 
   /**
@@ -153,15 +116,13 @@ export function DoublyLinkedList() {
    * @param {string | number} data
    */
   this.addLast = data => {
-    checkDuplication(data);
-
     if (this.isEmpty()) head = tail = new Node(data);
     else {
       tail.next = new Node(data, tail, null);
       tail = tail.next;
     }
 
-    nodeAdded(data);
+    length++;
   };
 
   /**
@@ -179,7 +140,6 @@ export function DoublyLinkedList() {
     if (index === 0) return this.addFirst(data);
     if (index === length) return this.addLast(data);
 
-    checkDuplication(data);
     validateIndex(index);
 
     let trav = head;
@@ -189,7 +149,7 @@ export function DoublyLinkedList() {
     trav.next.prev = newNode;
     trav.next = newNode;
 
-    nodeAdded(data);
+    length++;
   };
 
   /**
@@ -201,7 +161,7 @@ export function DoublyLinkedList() {
 
     const data = head.data;
     head = head.next;
-    nodeRemoved(data);
+    length--;
 
     if (this.isEmpty()) tail = null;
     else head.prev = null;
@@ -218,7 +178,7 @@ export function DoublyLinkedList() {
 
     const data = tail.data;
     tail = tail.prev;
-    nodeRemoved(data);
+    length--;
 
     if (this.isEmpty()) head = null;
     else tail.next = null;
@@ -239,7 +199,7 @@ export function DoublyLinkedList() {
     const data = node.data;
     node.next = node.prev = null;
 
-    nodeRemoved(data);
+    length--;
     return data;
   };
 
@@ -265,10 +225,9 @@ export function DoublyLinkedList() {
    * @returns {string | number} the removed node's data
    */
   this.removeNodeWithValue = value => {
-    if (!values.has(value)) return value;
-
     for (let trav = head; trav; trav = trav.next)
       if (trav.data === value) return this.removeNode(trav);
+    return value;
   };
 
   /**
@@ -277,11 +236,18 @@ export function DoublyLinkedList() {
    * @returns {number} the node's index, or -1 if it doesn't exist
    */
   this.indexOf = value => {
-    if (!this.contains(value)) return -1;
     let trav = head;
     for (let i = 0; trav, i < length; trav = trav.next, i++)
       if (trav.data === value) return i;
+    return -1;
   };
+
+  /**
+   * Check whether a value exists in the list. O(n)
+   * @param {string | number} value node's data
+   * @returns {boolean} true if it exists
+   */
+  this.contains = value => this.indexOf(value) !== -1;
 
   /**
    * Define a iterator for the list so that we can use it as an iterator. For each iteration, the iterator returns a node.

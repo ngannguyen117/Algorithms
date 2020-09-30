@@ -41,7 +41,7 @@ describe('Testing on DoublyLinkedList', () => {
       expect(list.size()).toBe(2);
       expect(list.toString()).toBe('0 1');
 
-      expect(() => list.insert(0)).toThrow('Duplicate values');
+      expect(() => list.insert(0)).not.toThrow('Duplicate values');
     });
 
     test('Calling addLast or add puts new element at the end of the list', () => {
@@ -53,7 +53,7 @@ describe('Testing on DoublyLinkedList', () => {
       expect(list.size()).toBe(3);
       expect(list.toString()).toBe('1 2 3');
 
-      expect(() => list.insert(2)).toThrow('Duplicate values');
+      expect(() => list.insert(2)).not.toThrow('Duplicate values');
     });
 
     test('Calling insert (with index) should put new element at that index, or throws an Error if index is out of bound', () => {
@@ -76,7 +76,7 @@ describe('Testing on DoublyLinkedList', () => {
       expect(list.size()).toBe(5);
       expect(list.toString()).toBe('0 1 2 3 4');
 
-      expect(() => list.insert(2)).toThrow('Duplicate values');
+      expect(() => list.insert(2)).not.toThrow('Duplicate values');
     });
   });
 
