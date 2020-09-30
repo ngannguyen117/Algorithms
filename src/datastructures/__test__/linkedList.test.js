@@ -1,0 +1,151 @@
+import { DoublyLinkedList } from '../linkedList';
+
+describe('Testing on DoublyLinkedList', () => {
+  let list;
+
+  describe('Test methods on empty list', () => {
+    beforeEach(() => {
+      list = new DoublyLinkedList();
+    });
+
+    test('List is empty with size = 0', () => {
+      expect(list.size()).toBe(0);
+      expect(list.isEmpty()).toBe(true);
+    });
+
+    test('Calling peak first/last on empty list returns null', () => {
+      expect(list.peakFirst()).toBeNull();
+      expect(list.peakLast()).toBeNull();
+    });
+
+    test('Calling removing first/last on empty list returns undefined', () => {
+      expect(list.removeFirst()).toBeUndefined();
+      expect(list.removeLast()).toBeUndefined();
+    });
+  });
+
+  describe('Test adding methods on list', () => {
+    beforeEach(() => {
+      list = new DoublyLinkedList();
+      list.add(1);
+      expect(list.size()).toBe(1);
+      expect(list.toString()).toBe('1');
+    });
+
+    test('Calling addFirst puts the new element at the beginning of the list', () => {
+      list.addFirst(0);
+      expect(list.size()).toBe(2);
+      expect(list.toString()).toBe('0 1');
+    });
+
+    test('Calling addLast or add puts new element at the end of the list', () => {
+      list.addLast(2);
+      expect(list.size()).toBe(2);
+      expect(list.toString()).toBe('1 2');
+
+      list.add(3);
+      expect(list.size()).toBe(3);
+      expect(list.toString()).toBe('1 2 3');
+    });
+
+    test('Calling insert (with index) should put new element at that index, or throws an Error if index is out of bound', () => {
+      list.add(3);
+      expect(list.size()).toBe(2);
+      expect(list.toString()).toBe('1 3');
+
+      expect(() => list.insert(0, -1)).toThrow('Illegal Index');
+      expect(() => list.insert(0, 4)).toThrow('Illegal Index');
+
+      list.insert(2, 1);
+      expect(list.size()).toBe(3);
+      expect(list.toString()).toBe('1 2 3');
+
+      list.insert(0, 0);
+      expect(list.size()).toBe(4);
+      expect(list.toString()).toBe('0 1 2 3');
+
+      list.insert(4, 4);
+      expect(list.size()).toBe(5);
+      expect(list.toString()).toBe('0 1 2 3 4');
+    });
+  });
+
+  describe('Test other methods on non-empty list', () => {
+    beforeEach(() => {
+      list = new DoublyLinkedList();
+      list.add(1);
+      list.add(5);
+      list.add(9);
+      list.addLast(10);
+      list.addFirst(0);
+      list.insert(2, 2);
+      expect(list.size()).toBe(6);
+      expect(list.toString()).toBe('0 1 2 5 9 10');
+    });
+
+    test('Removing methods should remove the correct element from the list', () => {
+      let value = list.removeFirst();
+      expect(value).toBe(0);
+      expect(list.size()).toBe(5);
+      expect(list.toString()).toBe('1 2 5 9 10');
+
+      value = list.removeLast();
+      expect(value).toBe(10);
+      expect(list.size()).toBe(4);
+      expect(list.toString()).toBe('1 2 5 9');
+
+      expect(() => list.removeAt(-1)).toThrow('Illegal Index');
+      expect(() => list.removeAt(10)).toThrow('Illegal Index');
+
+      list.removeAt(1);
+      expect(list.size()).toBe(3);
+      expect(list.toString()).toBe('1 5 9');
+
+      let result = list.removeNodeWithValue(10);
+      expect(result).toBeFalsy();
+      expect(list.size()).toBe(3);
+
+      result = list.removeNodeWithValue(9);
+      expect(result).toBeTruthy();
+      expect(list.size()).toBe(2);
+      expect(list.toString()).toBe('1 5');
+    });
+
+    test('Peaking first/last should return the appropriate value', () => {
+      expect(list.peakFirst()).toBe(0);
+      expect(list.peakLast()).toBe(10);
+
+      list.add(11);
+      expect(list.toString()).toBe('0 1 2 5 9 10 11');
+      expect(list.peakLast()).toBe(11);
+      list.addFirst(-1);
+      expect(list.toString()).toBe('-1 0 1 2 5 9 10 11');
+      expect(list.peakFirst()).toBe(-1);
+
+      list.removeFirst();
+      expect(list.toString()).toBe('0 1 2 5 9 10 11');
+      expect(list.peakFirst()).toBe(0);
+
+      list.removeLast();
+      expect(list.toString()).toBe('0 1 2 5 9 10');
+      expect(list.peakLast()).toBe(10);
+    });
+
+    test('Clearing the list should remove all elements from the list', () => {
+      list.clear();
+      expect(list.isEmpty()).toBeTruthy();
+      expect(list.size()).toBe(0);
+    });
+
+    test('IndexOf method should return the correct index of the value in the list, or -1 if it does not exist', () => {
+      expect(list.indexOf(3)).toBe(-1);
+      expect(list.indexOf(1)).toBe(1);
+      expect(list.indexOf(9)).toBe(4);
+    });
+
+    test('Contains method should return true if the value exist, otherwise false', () => {
+      expect(list.contains(3)).toBeFalsy();
+      expect(list.contains(10)).toBeTruthy();
+    });
+  });
+});
