@@ -38,11 +38,16 @@
  */
 
 /**
- * Doubly LinkedList. Allows duplicate values
+ * Doubly Linked List that does not allow duplicate value.
+ *
+ * The allowed data types in this linked list are string and number, no Objects
  */
 export function DoublyLinkedList() {
   /**
-   * a private Node class to hold data, prev node and next node
+   * a Node in a linked list that contains data, a pointer to the previous node and a pointer to the next node
+   * @param {string | number} data
+   * @param {Node} prev a pointer to the previous node
+   * @param {Node} next a pointer to the next node
    */
   function Node(data, prev = null, next = null) {
     this.data = data;
@@ -50,112 +55,153 @@ export function DoublyLinkedList() {
     this.next = next;
   }
 
-  let length = 0;
+  let length = 0; // number of nodes in the list
   let head = null;
   let tail = null;
+  const values = new Set(); // keep track of values have been added to the list
 
   /**
-   * The number of nodes in this linked list, O(1)
+   * Check whether a value exists in the list. O(1)
+   * @param {string | number} value node's data
+   * @returns {boolean} true if it exists
    */
+  this.contains = value => values.has(value);
+
+  /**
+   * Throw an error when there's already such a value exists in the list. O(1)
+   * @param {string | number} value
+   */
+  const checkDuplication = value => {
+    if (this.contains(value)) throw Error('Duplicate values');
+  };
+
+  /**
+   * Check if the index is within the valid range [0, length). O(1)
+   * @param {number} index an index number for the list
+   */
+  const validateIndex = index => {
+    if (index < 0 || index >= length) throw Error('Index out of range');
+  };
+
+  /**
+   * when a new node has been added to the list, increment the length and add that value to the set values. O(1)
+   * @param {string | number} data
+   */
+  const nodeAdded = data => {
+    length++;
+    values.add(data);
+  };
+
+  /**
+   * when a new node has been removed from the list, decrement the length and delete that value to the set values. O(1)
+   * @param {string | number} data
+   */
+  const nodeRemoved = data => {
+    length--;
+    values.delete(data);
+  };
+
   this.size = () => length;
-
-  /**
-   * Is this linked list empty?, O(1)
-   */
   this.isEmpty = () => length === 0;
 
   /**
-   * Clear this linked list, O(n)
-   */
-  this.clear = () => {
-    let trav = head;
-    while (trav) {
-      const next = trav.next;
-      trav.prev = trav.next = trav.data = null;
-      trav = next;
-    }
-
-    length = 0;
-    head = tail = trav = null;
-  };
-
-  /**
-   * Add a new node to the end of the list
-   * @param {*} data the data that the new node will hold.
-   * O(1)
-   */
-  this.addLast = data => {
-    if (this.isEmpty()) head = tail = new Node(data, null, null);
-    else {
-      tail.next = new Node(data, tail, null);
-      tail = tail.next;
-    }
-    length++;
-  };
-
-  /**
-   * Add a new node to the beginning of the list
-   * @param {*} data the data that the new node will hold.
-   * O(1)
-   */
-  this.addFirst = data => {
-    if (this.isEmpty()) head = tail = new Node(data, null, null);
-    else {
-      head.prev = new Node(data, null, head);
-      head = head.prev;
-    }
-    length++;
-  };
-
-  /**
-   * The default add method of a linked list will be added to the end of the list
-   * @param {*} data the data that the new node will hold.
-   * O(1)
-   */
-  this.add = data => this.addLast(data);
-
-  /**
-   * Insert a new node at the index location. O(n)
-   * @param {*} data the data that the new node will hold
-   * @param {*} index the index location for data to be inserted at.
-   */
-  this.insert = (data, index) => {
-    if (index < 0 || index > length) throw Error('Illegal Index');
-    if (index === 0) return this.addFirst(data);
-    if (index === length) return this.addLast(data);
-
-    let trav = head;
-    for (let i = 0; i < index - 1; i++) trav = trav.next;
-
-    const node = new Node(data, trav, trav.next);
-    trav.next.prev = node;
-    trav.next = node;
-
-    length++;
-  };
-
-  /**
-   * Return the value of the first element, if exists.
-   * O(1)
+   * Return data at the list's head, if the list is not empty. O(1)
    */
   this.peakFirst = () => (head ? head.data : null);
 
   /**
-   * Return the value of the last element, if exists.
-   * O(1)
+   * Return data at the list's tail, if the list is not empty. O(1)
    */
   this.peakLast = () => (tail ? tail.data : null);
 
   /**
-   * Remove the first element of the list.
-   * O(1)
+   * Clear the list by removing all nodes's pointers. O(n)
+   */
+  this.clear = () => {
+    if (this.isEmpty()) return;
+
+    let trav = head;
+    while (trav) {
+      const next = trav.next;
+      trav.next = trav.prev = trav.data = null;
+      trav = next;
+    }
+
+    length = 0;
+    head = tail = null;
+    values.clear();
+  };
+
+  /**
+   * Add a new node with the provided data to the beginning of the list, if the value hasn't existed in the list. O(1)
+   * @param {string | number} data
+   */
+  this.addFirst = data => {
+    checkDuplication(data);
+
+    if (this.isEmpty()) head = tail = new Node(data);
+    else {
+      head.prev = new Node(data, null, head);
+      head = head.prev;
+    }
+
+    nodeAdded(data);
+  };
+
+  /**
+   * Add a new node with the provided data to the end of the list, if the value hasn't existed in the list. O(1)
+   * @param {string | number} data
+   */
+  this.addLast = data => {
+    checkDuplication(data);
+
+    if (this.isEmpty()) head = tail = new Node(data);
+    else {
+      tail.next = new Node(data, tail, null);
+      tail = tail.next;
+    }
+
+    nodeAdded(data);
+  };
+
+  /**
+   * Add a new node with the provided data to the end of the list, if the value hasn't existed in the list. O(1)
+   * @param {string | number} data
+   */
+  this.add = data => this.addLast(data);
+
+  /**
+   * Insert a new node to the list at the specified index, if the value hasn't existed and the index is within range. O(n)
+   * @param {string | number} data
+   * @param {number} index
+   */
+  this.insert = (data, index) => {
+    if (index === 0) return this.addFirst(data);
+    if (index === length) return this.addLast(data);
+
+    checkDuplication(data);
+    validateIndex(index);
+
+    let trav = head;
+    for (let i = 0; i < index - 1; i++) trav = trav.next;
+
+    const newNode = new Node(data, trav, trav.next);
+    trav.next.prev = newNode;
+    trav.next = newNode;
+
+    nodeAdded(data);
+  };
+
+  /**
+   * Remove the first node from the list. O(1)
+   * @returns {string | number} data the removed node's data
    */
   this.removeFirst = () => {
     if (this.isEmpty()) return;
 
     const data = head.data;
     head = head.next;
-    length--;
+    nodeRemoved(data);
 
     if (this.isEmpty()) tail = null;
     else head.prev = null;
@@ -164,15 +210,15 @@ export function DoublyLinkedList() {
   };
 
   /**
-   * Remove the last element of the list.
-   * O(1)
+   * Remove the last node from the list. O(1)
+   * @returns {string | number} the removed node's data
    */
   this.removeLast = () => {
     if (this.isEmpty()) return;
 
     const data = tail.data;
     tail = tail.prev;
-    length--;
+    nodeRemoved(data);
 
     if (this.isEmpty()) head = null;
     else tail.next = null;
@@ -181,89 +227,75 @@ export function DoublyLinkedList() {
   };
 
   /**
-   * Remove an arbitrary node. O(1).
-   * Assuming the node provided exists in the linked list
-   * @param {*} node
+   * Remove an arbitrary node from the list. O(1)
+   * @param {Node} node node to be removed
+   * @returns {string | number} the removed node's data
    */
-  this.remove = node => {
+  this.removeNode = node => {
     if (!node.prev) return this.removeFirst();
     if (!node.next) return this.removeLast();
 
-    node.prev.next = node.next;
-    node.next.prev = node.prev;
-
+    [node.prev.next, node.next.prev] = [node.next, node.prev];
     const data = node.data;
-    node = node.prev = node.next = null;
-    length--;
+    node.next = node.prev = null;
 
+    nodeRemoved(data);
     return data;
   };
 
   /**
-   * Remove a node at a particular index position.
-   * O(n).
-   * @param {*} index The index of the node that needs to be removed
+   * Remove a node at the specified index. O(n)
+   * @param {number} index the index of the node to be removed
+   * @returns {string | number} the removed node's data
    */
   this.removeAt = index => {
-    if (index < 0 || index >= length) throw Error('Illegal Index');
+    if (index === 0) return this.removeFirst();
+    if (index === length - 1) return this.removeLast();
 
-    let trav;
-    if (index < Math.round(length / 2)) {
-      trav = head;
-      for (let i = 0; i != index; i++) trav = trav.next;
-    } else {
-      trav = tail;
-      for (let i = length - 1; i != index; i--) trav = trav.prev;
-    }
+    validateIndex(index);
+    let trav = head;
+    for (let i = 0; i < index; i++) trav = trav.next;
 
-    this.remove(trav);
+    return this.removeNode(trav);
   };
 
   /**
-   * Remove all the nodes in the list with the provided value.
-   * O(n).
-   * @param {*} value the value of the Node.data
+   * Remove a node with the specified value. O(n)
+   * @param {string | number} value value of a node to be removed
+   * @returns {string | number} the removed node's data
    */
   this.removeNodeWithValue = value => {
-    let found = false;
+    if (!values.has(value)) return value;
+
     for (let trav = head; trav; trav = trav.next)
-      if (trav.data === value) {
-        this.remove(trav);
-        found = true;
-      }
-    return found;
+      if (trav.data === value) return this.removeNode(trav);
   };
 
   /**
-   * Find the first index of the Node with the provided value. O(n)
-   * @param {*} value the value of the Node.data
+   * Find the index of the node with the specified value. O(n)
+   * @param {string | number} value value of a node to be found
+   * @returns {number} the node's index, or -1 if it doesn't exist
    */
   this.indexOf = value => {
-    let index = 0;
-    let trav;
-
-    for (trav = head; trav; trav = trav.next, index++)
-      if (trav.data === value) return index;
-
-    return -1;
+    if (!this.contains(value)) return -1;
+    let trav = head;
+    for (let i = 0; trav, i < length; trav = trav.next, i++)
+      if (trav.data === value) return i;
   };
 
   /**
-   * Check whether the provided value exists in the list. O(n)
-   * @param {*} value the value of the Node.data
-   */
-  this.contains = value => this.indexOf(value) !== -1;
-
-  /**
-   * Create a method for @@iterator protocol so that we can iterate through linked list as a iterable
+   * Define a iterator for the list so that we can use it as an iterator. For each iteration, the iterator returns a node.
    */
   this[Symbol.iterator] = function* () {
-    for (let trav = head; trav; trav = trav.next) yield trav.data;
+    for (let trav = head; trav; trav = trav.next) yield trav;
   };
 }
 
+/**
+ * Define the toString method for the list, it returns the list of data in each node, seperated by one space. O(n)
+ */
 DoublyLinkedList.prototype.toString = function () {
   const values = [];
-  for (const value of this[Symbol.iterator]()) values.push(value);
+  for (let node of this[Symbol.iterator]()) values.push(node.data);
   return values.join(' ');
 };

@@ -22,6 +22,10 @@ describe('Testing on DoublyLinkedList', () => {
       expect(list.removeFirst()).toBeUndefined();
       expect(list.removeLast()).toBeUndefined();
     });
+
+    test('Calling clear() on an empty list should simply do nothing or return undefined', () => {
+      expect(list.clear()).toBeUndefined();
+    });
   });
 
   describe('Test adding methods on list', () => {
@@ -36,6 +40,8 @@ describe('Testing on DoublyLinkedList', () => {
       list.addFirst(0);
       expect(list.size()).toBe(2);
       expect(list.toString()).toBe('0 1');
+
+      expect(() => list.insert(0)).toThrow('Duplicate values');
     });
 
     test('Calling addLast or add puts new element at the end of the list', () => {
@@ -46,6 +52,8 @@ describe('Testing on DoublyLinkedList', () => {
       list.add(3);
       expect(list.size()).toBe(3);
       expect(list.toString()).toBe('1 2 3');
+
+      expect(() => list.insert(2)).toThrow('Duplicate values');
     });
 
     test('Calling insert (with index) should put new element at that index, or throws an Error if index is out of bound', () => {
@@ -53,8 +61,8 @@ describe('Testing on DoublyLinkedList', () => {
       expect(list.size()).toBe(2);
       expect(list.toString()).toBe('1 3');
 
-      expect(() => list.insert(0, -1)).toThrow('Illegal Index');
-      expect(() => list.insert(0, 4)).toThrow('Illegal Index');
+      expect(() => list.insert(0, -1)).toThrow('Index out of range');
+      expect(() => list.insert(0, 4)).toThrow('Index out of range');
 
       list.insert(2, 1);
       expect(list.size()).toBe(3);
@@ -67,6 +75,8 @@ describe('Testing on DoublyLinkedList', () => {
       list.insert(4, 4);
       expect(list.size()).toBe(5);
       expect(list.toString()).toBe('0 1 2 3 4');
+
+      expect(() => list.insert(2)).toThrow('Duplicate values');
     });
   });
 
@@ -94,19 +104,43 @@ describe('Testing on DoublyLinkedList', () => {
       expect(list.size()).toBe(4);
       expect(list.toString()).toBe('1 2 5 9');
 
-      expect(() => list.removeAt(-1)).toThrow('Illegal Index');
-      expect(() => list.removeAt(10)).toThrow('Illegal Index');
+      expect(() => list.removeAt(-1)).toThrow('Index out of range');
+      expect(() => list.removeAt(4)).toThrow('Index out of range');
 
-      list.removeAt(1);
+      // remove at the first index
+      value = list.removeAt(0);
+      expect(value).toBe(1);
+      expect(list.size()).toBe(3);
+      expect(list.toString()).toBe('2 5 9');
+
+      // add 1 back
+      list.addFirst(1);
+      expect(list.size()).toBe(4);
+      expect(list.toString()).toBe('1 2 5 9');
+
+      // remove at the last index
+      value = list.removeAt(3);
+      expect(value).toBe(9);
+      expect(list.size()).toBe(3);
+      expect(list.toString()).toBe('1 2 5');
+
+      // add 9 back
+      list.addLast(9);
+      expect(list.size()).toBe(4);
+      expect(list.toString()).toBe('1 2 5 9');
+
+      // remove at an index in the middle
+      value = list.removeAt(1);
+      expect(value).toBe(2);
       expect(list.size()).toBe(3);
       expect(list.toString()).toBe('1 5 9');
 
-      let result = list.removeNodeWithValue(10);
-      expect(result).toBeFalsy();
+      value = list.removeNodeWithValue(10);
+      expect(value).toBe(10);
       expect(list.size()).toBe(3);
 
-      result = list.removeNodeWithValue(9);
-      expect(result).toBeTruthy();
+      value = list.removeNodeWithValue(9);
+      expect(value).toBe(9);
       expect(list.size()).toBe(2);
       expect(list.toString()).toBe('1 5');
     });
