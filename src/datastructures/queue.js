@@ -28,14 +28,14 @@ import { SinglyLinkedList } from './linkedList';
  * Queue implementation using SinglyLinkedList
  * @param {string | number} firstElement (optional) provide a value to initialize the queue with a first element
  */
-export function ListQueue(firstElement = null) {
+export function Queue(firstElement = null) {
   const list = new SinglyLinkedList();
 
   this.size = () => list.size();
   this.isEmpty = () => list.size() === 0;
 
   /**
-   * Get the element at the front of the queue without modifying the queue
+   * Get the element at the front of the queue without modifying the queue. O(1)
    * @returns {string | number} front element
    */
   this.peak = () => {
@@ -44,13 +44,13 @@ export function ListQueue(firstElement = null) {
   };
 
   /**
-   * Adding element to the end of the queue (polling)
+   * Adding element to the end of the queue (polling). O(1)
    * @param {string | number} value
    */
   this.enqueue = value => list.addLast(value);
 
   /**
-   * Remove the front element of the queue and return its value
+   * Remove the front element of the queue and return its value. O(1)
    * @returns {string | number} front element
    */
   this.dequeue = () => {
@@ -63,7 +63,7 @@ export function ListQueue(firstElement = null) {
   this[Symbol.iterator] = list[Symbol.iterator];
 }
 
-ListQueue.prototype.toString = function () {
+Queue.prototype.toString = function () {
   const values = [];
   for (let node of this[Symbol.iterator]()) values.push(node.data);
   return values.join(' ');
