@@ -74,6 +74,7 @@ ListStack.prototype.toString = function () {
 
 /**
  * Stack implemented using Javascript built-in Array.
+ * Example of String representation: [1 2 3 4] - 1 is the bottom of the stack, 4 is the top of the stack
  * @param {string | number | null} firstElement (optional) provide a value to create the stack with a first element
  */
 export function ArrayStack(firstElement = null) {
