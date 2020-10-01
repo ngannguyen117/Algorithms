@@ -71,3 +71,50 @@ ListStack.prototype.toString = function () {
   for (let node of this[Symbol.iterator]()) values.push(node.data);
   return values.reverse().join(' ');
 };
+
+/**
+ * Stack implemented using Javascript built-in Array.
+ * @param {string | number | null} firstElement (optional) provide a value to create the stack with a first element
+ */
+export function ArrayStack(firstElement = null) {
+  const data = [];
+
+  this.size = () => data.length;
+  this.isEmpty = () => data.length === 0;
+
+  /**
+   * Push new value to the front of the stack. O(1)
+   * @param {string | number} value
+   */
+  this.push = value => data.push(value);
+
+  /**
+   * Get the stack's top element without removing it. O(1)
+   * @returns {string | number} stack's top element
+   */
+  this.peak = () => {
+    if (this.isEmpty()) throw new Error('Stack empty');
+    return data[data.length - 1];
+  };
+
+  /**
+   * Remove and return the top element in the stack. O(1)
+   * @returns {string | number} stack's top element
+   */
+  this.pop = () => {
+    if (this.isEmpty()) throw new Error('Stack empty');
+    return data.pop();
+  };
+
+  if (firstElement) this.push(firstElement);
+
+  this[Symbol.iterator] = function* () {
+    for (let i = 0; i < data.length; i++) yield data[i];
+  };
+}
+
+ArrayStack.prototype.toString = function () {
+  const values = [];
+  for (let data of this[Symbol.iterator]()) values.push(data);
+  return values.join(' ');
+};

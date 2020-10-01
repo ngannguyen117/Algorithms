@@ -1,4 +1,4 @@
-import { ListStack } from '../stack';
+import { ListStack, ArrayStack } from '../stack';
 
 const testStack = (Stack, stackName) => {
   describe(`Testing ${stackName}`, () => {
@@ -72,3 +72,4 @@ const testStack = (Stack, stackName) => {
 };
 
 testStack(ListStack, 'Stack implementation using SinglyLinkedList');
+testStack(ArrayStack, 'Stack implementation using Javascript built-in Array');
