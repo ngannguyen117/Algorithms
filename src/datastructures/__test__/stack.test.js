@@ -15,14 +15,15 @@ const testStack = (Stack, stackName) => {
       });
 
       test('Pop and peak on empty stack should throw an exception', () => {
-        expect(() => stack.pop()).toThrow('Stack empty');
-        expect(() => stack.peak()).toThrow('Stack empty');
+        expect(() => stack.pop()).toThrow('Stack Empty');
+        expect(() => stack.peak()).toThrow('Stack Empty');
       });
 
       test('Initialize a new stack with an element should include it in the stack', () => {
         stack = new Stack('One');
         const firstElement = stack.peak();
         expect(firstElement).toBe('One');
+        expect(stack.size()).toBe(1);
         expect(stack.toString()).toBe('One');
       });
 
@@ -30,11 +31,13 @@ const testStack = (Stack, stackName) => {
         stack.push('first');
         let topElement = stack.peak();
         expect(topElement).toBe('first');
+        expect(stack.size()).toBe(1);
         expect(stack.toString()).toBe('first');
 
         stack.push('second');
         topElement = stack.peak();
         expect(topElement).toBe('second');
+        expect(stack.size()).toBe(2);
         expect(stack.toString()).toBe('first second');
       });
     });

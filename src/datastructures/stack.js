@@ -46,7 +46,7 @@ export function ListStack(firstElement = null) {
    * @returns {string | number} stack's top element
    */
   this.pop = () => {
-    if (this.isEmpty()) throw new Error('Stack empty');
+    if (this.isEmpty()) throw new Error('Stack Empty');
 
     return list.removeFirst();
   };
@@ -56,7 +56,7 @@ export function ListStack(firstElement = null) {
    * @returns {string | number} stack's top element
    */
   this.peak = () => {
-    if (this.isEmpty()) throw new Error('Stack empty');
+    if (this.isEmpty()) throw new Error('Stack Empty');
 
     return list.peakFirst();
   };
@@ -93,7 +93,7 @@ export function ArrayStack(firstElement = null) {
    * @returns {string | number} stack's top element
    */
   this.peak = () => {
-    if (this.isEmpty()) throw new Error('Stack empty');
+    if (this.isEmpty()) throw new Error('Stack Empty');
     return data[data.length - 1];
   };
 
@@ -102,7 +102,7 @@ export function ArrayStack(firstElement = null) {
    * @returns {string | number} stack's top element
    */
   this.pop = () => {
-    if (this.isEmpty()) throw new Error('Stack empty');
+    if (this.isEmpty()) throw new Error('Stack Empty');
     return data.pop();
   };
 
