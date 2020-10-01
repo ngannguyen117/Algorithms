@@ -64,7 +64,7 @@ export function DoublyLinkedList() {
    * @param {number} index an index number for the list
    */
   const validateIndex = index => {
-    if (index < 0 || index >= length) throw Error('Index out of range');
+    if (index < 0 || index >= length) throw new Error('Index out of range');
   };
 
   this.size = () => length;
@@ -325,7 +325,7 @@ export function SinglyLinkedList() {
    * @param {number} index an index number for the list
    */
   const validateIndex = index => {
-    if (index < 0 || index >= length) throw Error('Index out of range');
+    if (index < 0 || index >= length) throw new Error('Index out of range');
   };
 
   /**
