@@ -33,6 +33,7 @@ export function Queue(firstElement = null) {
 
   this.size = () => list.size();
   this.isEmpty = () => list.size() === 0;
+  this.clear = () => list.clear();
 
   /**
    * Get the element at the front of the queue without modifying the queue. O(1)

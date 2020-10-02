@@ -34,6 +34,7 @@ export function ListStack(firstElement = null) {
 
   this.size = () => list.size();
   this.isEmpty = () => list.size() === 0;
+  this.clear = () => list.clear();
 
   /**
    * Push new value to the front of the stack. O(1)
@@ -78,10 +79,11 @@ ListStack.prototype.toString = function () {
  * @param {string | number | null} firstElement (optional) provide a value to create the stack with a first element
  */
 export function ArrayStack(firstElement = null) {
-  const data = [];
+  let data = [];
 
   this.size = () => data.length;
   this.isEmpty = () => data.length === 0;
+  this.clear = () => (data = []);
 
   /**
    * Push new value to the front of the stack. O(1)

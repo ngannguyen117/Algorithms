@@ -2,6 +2,9 @@ import { Queue } from '../queue';
 
 describe('Testing Queue implemented using SinglyLinkedList', () => {
   let queue;
+  afterEach(() => {
+    queue.clear();
+  });
 
   describe('Test on empty queue', () => {
     beforeEach(() => {

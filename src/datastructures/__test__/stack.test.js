@@ -3,6 +3,9 @@ import { ListStack, ArrayStack } from '../stack';
 const testStack = (Stack, stackName) => {
   describe(`Testing ${stackName}`, () => {
     let stack;
+    afterEach(() => {
+      stack.clear();
+    });
 
     describe('Test empty stack', () => {
       beforeEach(() => {
