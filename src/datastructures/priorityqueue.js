@@ -53,10 +53,9 @@
  * @returns {(a, b) => -1 | 0 | 1} Comparator function
  */
 export const compare = (order = 1) => (a, b) => {
-  let result;
+  let result = 1;
   if (a < b) result = -1;
   else if (a === b) result = 0;
-  else result = 1;
 
   return result * order;
 };
@@ -127,14 +126,13 @@ export function BinaryHeap(comparator = compare()) {
       const leftInd = getLeftChildIndex(index);
       const rightInd = getRightChildIndex(index);
 
-      const heapSize = this.size();
-      if (leftInd >= heapSize) break; // children indexes are both greater than heapSize
+      if (leftInd >= this.size()) break; // children indexes are both greater than heapSize
 
       // if right & left indexes are both valid, then get the one with higher priority,
       // otherwise, pick leftInd (because rightInd at this point is invalid)
       let vip = leftInd;
-      if (rightInd < heapSize)
-        vip = hasPriority(leftInd, rightInd) ? leftInd : rightInd;
+      if (rightInd < this.size() && !hasPriority(leftInd, rightInd))
+        vip = rightInd;
 
       // if current node has higher priority than the chosen node then we're done
       if (hasPriority(index, vip)) break;
