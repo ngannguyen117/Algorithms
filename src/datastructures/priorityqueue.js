@@ -76,9 +76,7 @@ export function BinaryHeap(comparator = compare()) {
   this.comparator = comparator;
   this.size = () => data.length;
   this.isEmpty = () => this.size() === 0;
-  this.clear = () => {
-    data = [];
-  }; // O(1)
+  this.clear = () => (data = []); // O(1)
 
   /**
    * Check if element at index i has higher priority over element at index j. O(1)
@@ -130,18 +128,16 @@ export function BinaryHeap(comparator = compare()) {
       const rightInd = getRightChildIndex(index);
 
       const heapSize = this.size();
-      if (leftInd >= heapSize && rightInd >= heapSize) break;
+      if (leftInd >= heapSize) break; // children indexes are both greater than heapSize
 
-      let vip;
-      if (leftInd < heapSize && rightInd < heapSize)
+      // if right & left indexes are both valid, then get the one with higher priority,
+      // otherwise, pick leftInd (because rightInd at this point is invalid)
+      let vip = leftInd;
+      if (rightInd < heapSize)
         vip = hasPriority(leftInd, rightInd) ? leftInd : rightInd;
-      else if (leftInd < heapSize) {
-        if (hasPriority(index, leftInd)) break;
-        vip = leftInd;
-      } else {
-        if (hasPriority(index, rightInd)) break;
-        vip = rightInd;
-      }
+
+      // if current node has higher priority than the chosen node then we're done
+      if (hasPriority(index, vip)) break;
 
       swap(index, vip);
       index = vip;
@@ -224,17 +220,22 @@ export function BinaryHeap(comparator = compare()) {
   };
 
   /**
-   * After initialization of the Heap, calling heapify with initial elements will store
-   * all of these elements to the heap, and sift elements up or down to meet the requirement of a heap.
-   *
-   * If the heap isn't empty when calling this method, all old elements will be erased.
-   * @param {string[] | number[]} elements The initial elements of the priority queue
+   * Add multiple values to the heap at once. This method only append
+   * those elements to the end of the heap but doesn't rearrange them
+   * to satisfy the heap invariant. To satisfy the heap invariant,
+   * this method should be followed by heapify() method.
+   * @param {any[]} values an array of values to be added to the heap, the original order may not satisfied heap invariant
    */
-  this.heapify = elements => {
-    if (!elements || !Array.isArray(elements) || elements.length < 1)
+  this.addBulk = values => {
+    if (!values || !Array.isArray(values) || values.length < 1)
       throw new Error('Parameter Missing or Invalid');
+    data.push(...values);
+  };
 
-    data = elements;
+  /**
+   * Rearrange elements in the heap to satisfy the heap invariant
+   */
+  this.heapify = () => {
     for (let i = Math.max(0, Math.floor(data.length / 2) - 1); i >= 0; i--)
       sink(i);
   };

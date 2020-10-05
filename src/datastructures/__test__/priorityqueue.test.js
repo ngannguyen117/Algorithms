@@ -38,6 +38,10 @@ const testPriorityQueue = (PQ, pqName, desc = false) => {
         expect(pq.isValidHeap()).toBeTruthy();
       });
 
+      test('heapify() should not throw any errors', () => {
+        expect(pq.heapify()).toBeUndefined();
+      });
+
       test('add() missing argument should throw error', () => {
         expect(() => pq.add()).toThrow('Parameter Missing or Invalid');
       });
@@ -85,16 +89,20 @@ const testPriorityQueue = (PQ, pqName, desc = false) => {
         expect(pq.isValidHeap()).toBeTruthy();
       });
 
-      test('heapify() should reorder the input array to satisfy the heap inraviant', () => {
-        pq.heapify([7, 3, 2, 4, 5, 2, 10, 3]);
-        console.log(pq.toString());
-        expect(pq.isValidHeap()).toBeTruthy();
+      test('addBulk() should throw an error if the argument is empty, not an array or empty array', () => {
+        expect(() => pq.addBulk()).toThrow('Parameter Missing or Invalid');
+        expect(() => pq.addBulk('str')).toThrow('Parameter Missing or Invalid');
+        expect(() => pq.addBulk([])).toThrow('Parameter Missing or Invalid');
       });
 
-      test('heapify() should throw an error if the argument is empty, not an array or empty array', () => {
-        expect(() => pq.heapify()).toThrow('Parameter Missing or Invalid');
-        expect(() => pq.heapify('str')).toThrow('Parameter Missing or Invalid');
-        expect(() => pq.heapify([])).toThrow('Parameter Missing or Invalid');
+      test('addBulk should add all elements in the arguments to the heap (but does not satisfy heap invariant), or throw errors if there is no argument', () => {
+        pq.addBulk([7, 3, 2, 4, 5, 2, 10, 3]);
+        expect(pq.size()).toBe(8);
+        expect(pq.isValidHeap()).toBeFalsy();
+      });
+
+      test('heapify() should not throw any error on empty heap', () => {
+        expect(pq.heapify()).toBeUndefined();
       });
     });
 
@@ -124,9 +132,9 @@ const testPriorityQueue = (PQ, pqName, desc = false) => {
         expect(pq.isValidHeap()).toBeTruthy();
       });
 
-      test('heapify() should erase the old elements', () => {
-        pq.heapify([7, 3, 2, 4, 5, 2, 10, 3]);
-        expect(pq.toString()).not.toBe(str);
+      test('heapify() will not rearrange the heap if it is already valid', () => {
+        pq.heapify();
+        expect(pq.toString()).toBe(str);
       });
 
       test('contains() should return true if there is such an element, otherwise false', () => {
@@ -169,14 +177,46 @@ const testPriorityQueue = (PQ, pqName, desc = false) => {
 
         str = desc ? '10 7 5 2 4 2 3' : '2 2 3 4 7 10 5';
         expect(pq.toString()).toBe(str);
+
+        expect(pq.remove()).toBeFalsy();
       });
 
-      test('removeAt() should remove the element at the specific index and staill maintain heap invariant', () => {
+      test('removeAt() should remove the element at the specific index and still maintain heap invariant', () => {
         expect(pq.removeAt(2)).toBe(desc ? 5 : 3);
         expect(pq.size()).toBe(7);
-
         str = desc ? '10 7 3 2 4 2 3' : '2 2 3 4 7 10 5';
         expect(pq.toString()).toBe(str);
+
+        // remove the element at the last index
+        const lastElem = desc ? 3 : 5;
+        expect(pq.removeAt(6)).toBe(lastElem);
+        expect(pq.size()).toBe(6);
+        str = desc ? '10 7 3 2 4 2' : '2 2 3 4 7 10';
+        expect(pq.toString()).toBe(str);
+      });
+
+      test('removeAt() with index < 0 or index >= heap size should throw an error', () => {
+        expect(() => pq.removeAt(-1)).toThrow('Index out of range');
+        expect(() => pq.removeAt(8)).toThrow('Index out of range');
+      });
+
+      test('addBulk should add new elements at the end of the heap. Heap becomes invalid.', () => {
+        pq.addBulk([0, 30, 8]);
+        str += ' 0 30 8';
+        expect(pq.toString()).toBe(str);
+        expect(pq.size()).toBe(11);
+        expect(pq.isValidHeap()).toBeFalsy();
+      });
+
+      test('heapify() should rearrange the elements in the heap for it to be valid', () => {
+        pq.addBulk([0, 30]);
+        str += ' 0 30';
+        expect(pq.toString()).toBe(str);
+        expect(pq.size()).toBe(10);
+        expect(pq.isValidHeap()).toBeFalsy();
+
+        pq.heapify();
+        expect(pq.isValidHeap()).toBeTruthy();
       });
     });
   });

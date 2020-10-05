@@ -4,7 +4,7 @@
   "description": "This repository presents the Javascript code implementation of the provided Algorithms and Data Structures from William Fiset @ [https://github.com/williamfiset/Algorithms](https://github.com/williamfiset/Algorithms)",
   "main": "index.js",
   "scripts": {
-    "test": "jest --watchAll --no-cache"
+    "test": "jest --watchAll --no-cache --coverage"
   },
   "repository": {
     "type": "git",
