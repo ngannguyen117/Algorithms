@@ -431,11 +431,9 @@ export function SinglyLinkedList() {
   /**
    * Remove the next node from the list from this specific node. O(n)
    * @param {Node} node node before the node to be removed
-   * @returns {Node} the current node
+   * @returns {Node} the same node with the required next node already removed
    */
-  this.removeNextNode = node => {
-    if (!node || !node.next) return node;
-
+  const removeNextNode = node => {
     const next = node.next;
     [node.next, next.next] = [next.next, null];
     length--;
@@ -462,7 +460,7 @@ export function SinglyLinkedList() {
     if (length === 1) return this.removeFirst();
 
     let prevNode = this.getPrevNode(length - 1);
-    prevNode = this.removeNextNode(prevNode);
+    prevNode = removeNextNode(prevNode);
     const data = tail.data;
     tail = prevNode;
     return data;
@@ -481,7 +479,7 @@ export function SinglyLinkedList() {
 
     let prevNode = this.getPrevNode(index);
     const data = prevNode.next.data;
-    this.removeNextNode(prevNode);
+    removeNextNode(prevNode);
 
     return data;
   };
@@ -494,16 +492,17 @@ export function SinglyLinkedList() {
   const removeNodesWithValueHelper = (value, single = false) => {
     if (this.isEmpty() || (length === 1 && head.data !== value)) return false;
 
+    let found = false;
     if (head.data === value) {
       this.removeFirst();
       if (single) return true;
+      found = true;
     }
 
-    let found = false;
     let trav = head;
     while (trav && trav.next) {
       if (trav.next.data === value) {
-        const node = this.removeNextNode(trav);
+        const node = removeNextNode(trav);
         if (!node.next) tail = node;
         found = true;
         if (single) break;

@@ -48,7 +48,7 @@ const linkedListTest = (List, listName) => {
     describe('Test adding methods on list', () => {
       beforeEach(() => {
         list = new List();
-        list.add(1);
+        list.addFirst(1);
         expect(list.size()).toBe(1);
         expect(list.toString()).toBe('1');
       });
@@ -95,9 +95,21 @@ const linkedListTest = (List, listName) => {
 
         expect(() => list.insert(2)).not.toThrow('Duplicate values');
       });
+
+      test('Calling removeFirstNodeWithValue should returns true if that element is in the head, otherwise, return false', () => {
+        expect(list.removeFirstNodeWithValue(0)).toBeFalsy();
+        expect(list.removeFirstNodeWithValue(1)).toBeTruthy();
+        expect(list.size()).toBe(0);
+      });
+
+      test('Calling removeAllNodesWithValue should returns true if that element is in the head, otherwise, return false', () => {
+        expect(list.removeAllNodesWithValue(0)).toBeFalsy();
+        expect(list.removeAllNodesWithValue(1)).toBeTruthy();
+        expect(list.size()).toBe(0);
+      });
     });
 
-    describe('Test other methods on non-empty list', () => {
+    describe('Test non-empty list', () => {
       beforeEach(() => {
         list = new List();
         list.add(1);
