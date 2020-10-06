@@ -150,7 +150,6 @@ export function BinarySearchTree(compareFunc = compare()) {
         node.left = remove(node.left, successor.data, false);
       }
     }
-    c;
     return node;
   };
 
