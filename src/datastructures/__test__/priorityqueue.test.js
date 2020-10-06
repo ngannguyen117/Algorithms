@@ -1,4 +1,5 @@
-import { BinaryHeap, compare } from '../priorityqueue';
+import { BinaryHeap } from '../priorityqueue';
+import { compare } from '../../utils/compare';
 
 const testPriorityQueue = (PQ, pqName, desc = false) => {
   describe(`Test ${pqName} as ${desc ? 'Max' : 'Min'} Priority Queue`, () => {
