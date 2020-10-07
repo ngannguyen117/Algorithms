@@ -333,6 +333,10 @@ describe('Test Binary Search Tree', () => {
         bst.remove(15);
         expect(() => iter.next()).toThrow('Concurrent Modification');
       });
+
+      test('print tree', () => {
+        console.log(bst.printTree());
+      });
     });
   });
 });

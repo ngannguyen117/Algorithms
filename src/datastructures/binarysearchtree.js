@@ -26,6 +26,7 @@
 import { ArrayStack } from './stack';
 import { Queue } from './queue';
 import { compare } from '../utils/compare';
+import { printTree } from '../utils/printer';
 import { TreeTraversalOrder } from '../utils/tree-traversal-order';
 
 /**
@@ -328,6 +329,8 @@ export function BinarySearchTree(compareFunc = compare()) {
         return null;
     }
   };
+
+  this.printTree = () => printTree(root);
 
   this[Symbol.iterator] = this.traverse;
 
