@@ -288,16 +288,16 @@ export function DoublyLinkedList() {
   this[Symbol.iterator] = function* () {
     for (let trav = head; trav; trav = trav.next) yield trav;
   };
-}
 
-/**
- * Define the toString method for the list, it returns the list of data in each node, seperated by one space. O(n)
- */
-DoublyLinkedList.prototype.toString = function () {
-  const values = [];
-  for (let node of this[Symbol.iterator]()) values.push(node.data);
-  return values.join(' ');
-};
+  /**
+   * Define the toString method for the list, it returns the list of data in each node, seperated by one space. O(n)
+   */
+  this.toString = () => {
+    const values = [];
+    for (let node of this[Symbol.iterator]()) values.push(node.data);
+    return values.join(' ');
+  };
+}
 
 /**
  * Singly Linked List, accept number or string, and allow duplicate values
@@ -553,10 +553,10 @@ export function SinglyLinkedList() {
   this[Symbol.iterator] = function* () {
     for (let trav = head; trav; trav = trav.next) yield trav;
   };
-}
 
-SinglyLinkedList.prototype.toString = function () {
-  const values = [];
-  for (let node of this[Symbol.iterator]()) values.push(node.data);
-  return values.join(' ');
-};
+  this.toString = () => {
+    const values = [];
+    for (let node of this[Symbol.iterator]()) values.push(node.data);
+    return values.join(' ');
+  };
+}

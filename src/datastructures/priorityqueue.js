@@ -246,10 +246,6 @@ export function BinaryHeap(comparator = compare()) {
   this[Symbol.iterator] = function* () {
     for (let i = 0; i < this.size(); i++) yield data[i];
   };
-}
 
-BinaryHeap.prototype.toString = function () {
-  const values = [];
-  for (let elem of this[Symbol.iterator]()) values.push(elem);
-  return values.join(' ');
-};
+  this.toString = () => data.join(' ');
+}

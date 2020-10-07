@@ -133,6 +133,14 @@ const testPriorityQueue = (PQ, pqName, desc = false) => {
         expect(pq.isValidHeap()).toBeTruthy();
       });
 
+      test('pq[Symbol.iterator]() should iterate through the heap level by level, left to right', () => {
+        const iter = pq[Symbol.iterator]();
+        expect(iter.next().value).toBe(desc ? 10 : 2);
+        expect(iter.next().value).toBe(desc ? 7 : 2);
+        expect(iter.next().value).toBe(desc ? 5 : 3);
+        expect(iter.next().value).toBe(desc ? 2 : 4);
+      });
+
       test('heapify() will not rearrange the heap if it is already valid', () => {
         pq.heapify();
         expect(pq.toString()).toBe(str);

@@ -73,6 +73,14 @@ const testStack = (Stack, stackName) => {
         expect(stack.size()).toBe(2);
         expect(stack.toString()).toBe('first second');
       });
+
+      test('stack[Symbol.iterator]() should iterate through the stack top to bottom', () => {
+        const iter = stack[Symbol.iterator]();
+
+        expect(iter.next().value).toBe('third');
+        expect(iter.next().value).toBe('second');
+        expect(iter.next().value).toBe('first');
+      });
     });
   });
 };

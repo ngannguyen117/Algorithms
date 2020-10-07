@@ -64,14 +64,16 @@ export function ListStack(firstElement = null) {
 
   if (firstElement) this.push(firstElement);
 
-  this[Symbol.iterator] = list[Symbol.iterator];
-}
+  this[Symbol.iterator] = function* () {
+    for (let node of list[Symbol.iterator]()) yield node.data;
+  };
 
-ListStack.prototype.toString = function () {
-  const values = [];
-  for (let node of this[Symbol.iterator]()) values.push(node.data);
-  return values.reverse().join(' ');
-};
+  this.toString = () => {
+    const values = [];
+    for (let value of this[Symbol.iterator]()) values.push(value);
+    return values.reverse().join(' ');
+  };
+}
 
 /**
  * Stack implemented using Javascript built-in Array.
@@ -112,12 +114,8 @@ export function ArrayStack(firstElement = null) {
   if (firstElement) this.push(firstElement);
 
   this[Symbol.iterator] = function* () {
-    for (let i = 0; i < data.length; i++) yield data[i];
+    for (let i = this.size() - 1; i >= 0; i--) yield data[i];
   };
-}
 
-ArrayStack.prototype.toString = function () {
-  const values = [];
-  for (let data of this[Symbol.iterator]()) values.push(data);
-  return values.join(' ');
-};
+  this.toString = () => data.join(' ');
+}

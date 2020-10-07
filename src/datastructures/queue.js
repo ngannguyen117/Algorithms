@@ -62,10 +62,10 @@ export function Queue(firstElement = null) {
   if (firstElement) this.enqueue(firstElement);
 
   this[Symbol.iterator] = list[Symbol.iterator];
-}
 
-Queue.prototype.toString = function () {
-  const values = [];
-  for (let node of this[Symbol.iterator]()) values.push(node.data);
-  return values.join(' ');
-};
+  this.toString = () => {
+    const values = [];
+    for (let node of this[Symbol.iterator]()) values.push(node.data);
+    return values.join(' ');
+  };
+}

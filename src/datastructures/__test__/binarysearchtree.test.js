@@ -279,7 +279,7 @@ describe('Test Binary Search Tree', () => {
         expect(bst.remove()).toBeFalsy();
         expect(bst.remove(0)).toBeFalsy();
 
-        expect(bst.remove(9)).toBeTruthy();
+        expect(bst.remove(9, true)).toBeTruthy();
         expect(bst.size()).toBe(7);
         expect(bst.height()).toBe(3);
         expect(bst.toString()).toBe('7 12 13 15 28 29 30');

@@ -127,8 +127,8 @@ export function BinarySearchTree(compareFunc = compare()) {
    */
   const remove = (node, elem, rightSuccessor = true) => {
     const cmp = comparator(elem, node.data);
-    if (cmp < 0) node.left = remove(node.left, elem);
-    else if (cmp > 0) node.right = remove(node.right, elem);
+    if (cmp < 0) node.left = remove(node.left, elem, rightSuccessor);
+    else if (cmp > 0) node.right = remove(node.right, elem, rightSuccessor);
     // found the node we wish to remove
     else {
       // Case: there could be either a right or left subtree (or no subtree)
@@ -330,12 +330,10 @@ export function BinarySearchTree(compareFunc = compare()) {
   };
 
   this[Symbol.iterator] = this.traverse;
-}
 
-BinarySearchTree.prototype.toString = function (
-  order = TreeTraversalOrder.IN_ORDER
-) {
-  const values = [];
-  for (let value of this[Symbol.iterator](order)) values.push(value);
-  return values.join(' ');
-};
+  this.toString = (order = TreeTraversalOrder.IN_ORDER) => {
+    const values = [];
+    for (let value of this[Symbol.iterator](order)) values.push(value);
+    return values.join(' ');
+  };
+}
