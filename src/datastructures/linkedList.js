@@ -37,12 +37,14 @@
  *    - Remove in middle: O(n)
  */
 
+import { compare } from '../utils/compare';
+
 /**
  * Doubly Linked List that allows duplicate values.
  *
  * The allowed data types in this linked list are string and number
  */
-export function DoublyLinkedList() {
+export function DoublyLinkedList(comparator = compare()) {
   /**
    * a Node in a linked list that contains data, a pointer to the previous node and a pointer to the next node
    * @param {string | number} data
@@ -228,13 +230,13 @@ export function DoublyLinkedList() {
   this.removeFirstNodeWithValue = value => {
     if (this.isEmpty()) return false;
 
-    if (head.data === value) {
+    if (comparator(value, head.data) === 0) {
       this.removeFirst();
       return true;
     }
 
     for (let trav = head; trav; trav = trav.next)
-      if (trav.data === value) {
+      if (comparator(value, trav.data) === 0) {
         this.removeNode(trav);
         return true;
       }
@@ -252,7 +254,7 @@ export function DoublyLinkedList() {
 
     let found = false;
     for (let trav = head; trav; trav = trav.next)
-      if (trav.data === value) {
+      if (comparator(value, trav.data) === 0) {
         const prev = trav.prev;
         this.removeNode(trav);
         if (prev) trav = prev;
@@ -271,7 +273,7 @@ export function DoublyLinkedList() {
   this.indexOf = value => {
     let trav = head;
     for (let i = 0; trav, i < length; trav = trav.next, i++)
-      if (trav.data === value) return i;
+      if (comparator(value, trav.data) === 0) return i;
     return -1;
   };
 
@@ -302,7 +304,7 @@ export function DoublyLinkedList() {
 /**
  * Singly Linked List, accept number or string, and allow duplicate values
  */
-export function SinglyLinkedList() {
+export function SinglyLinkedList(comparator = compare()) {
   /**
    * a Node in a linked list that contains data and a pointer to the next node
    * @param {string | number} data
@@ -490,10 +492,11 @@ export function SinglyLinkedList() {
    * @param {boolean} single whether to delete only a single first value or not
    */
   const removeNodesWithValueHelper = (value, single = false) => {
-    if (this.isEmpty() || (length === 1 && head.data !== value)) return false;
+    if (this.isEmpty() || (length === 1 && comparator(value, head.data)))
+      return false;
 
     let found = false;
-    if (head.data === value) {
+    if (comparator(value, head.data) === 0) {
       this.removeFirst();
       if (single) return true;
       found = true;
@@ -501,7 +504,7 @@ export function SinglyLinkedList() {
 
     let trav = head;
     while (trav && trav.next) {
-      if (trav.next.data === value) {
+      if (comparator(value, trav.next.data) === 0) {
         const node = removeNextNode(trav);
         if (!node.next) tail = node;
         found = true;
@@ -536,7 +539,7 @@ export function SinglyLinkedList() {
   this.indexOf = value => {
     let trav = head;
     for (let i = 0; trav, i < length; trav = trav.next, i++)
-      if (trav.data === value) return i;
+      if (comparator(value, trav.data) === 0) return i;
     return -1;
   };
 
