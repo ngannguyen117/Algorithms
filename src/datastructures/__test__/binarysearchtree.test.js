@@ -32,6 +32,10 @@ describe('Test Binary Search Tree', () => {
       expect(bst.height()).toBe(-1);
     });
 
+    test('Should satisfy BST invariant', () => {
+      expect(bst.validateBSTInvariant()).toBe(true);
+    });
+
     test('Contains(elem) and remove(elem) should return false', () => {
       expect(bst.contains(324)).toBeFalsy();
       expect(bst.contains('hello')).toBeFalsy();
@@ -164,6 +168,8 @@ describe('Test Binary Search Tree', () => {
       expect(bst.toString(TreeTraversalOrder.LEVEL_ORDER)).toBe(
         '28 9 30 12 29 15'
       );
+
+      expect(bst.validateBSTInvariant()).toBe(true);
     });
 
     test('Test adding new elements (as object) to the tree, in-order and level-order tree traversal', () => {
@@ -239,6 +245,8 @@ describe('Test Binary Search Tree', () => {
       expect(bst.toString(TreeTraversalOrder.LEVEL_ORDER)).toBe(
         'A28 C9 B30 C12 E29 D15 S15'
       );
+
+      expect(bst.validateBSTInvariant()).toBe(true);
     });
 
     describe('Tree contains data as either string or number', () => {
@@ -257,6 +265,8 @@ describe('Test Binary Search Tree', () => {
         expect(bst.toString(TreeTraversalOrder.LEVEL_ORDER)).toBe(
           '28 9 30 12 29 15'
         );
+
+        expect(bst.validateBSTInvariant()).toBe(true);
       });
 
       test('Contains() should return true if the element exists in the tree', () => {
@@ -335,7 +345,7 @@ describe('Test Binary Search Tree', () => {
       });
 
       test('print tree', () => {
-        console.log(bst.printTree());
+        bst.printTree();
       });
     });
   });

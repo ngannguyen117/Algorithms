@@ -40,6 +40,8 @@ import { TreeTraversalOrder } from '../utils/tree-traversal-order';
  * Comparator interface: (a, b) => -1 | 0 | 1
  *
  * A comparator is a function that takes in 2 elements and return -1 if a < b, 0 if a == b and 1 if a > b
+ *
+ * @param {(a, b) => -1 | 0 | 1} compareFunc a function to define how to compare the tree's data
  */
 export function BinarySearchTree(compareFunc = compare()) {
   const comparator = compareFunc;
@@ -258,6 +260,25 @@ export function BinarySearchTree(compareFunc = compare()) {
     }
   };
 
+  /**
+   * A recursive method to check if this tree satisfies the BST invariant
+   * @param {Node} node A subtree's root node
+   * @returns {boolean} true if it satisfies the BST invariant
+   */
+  const validateBSTInvariant = node => {
+    if (!node) return true;
+
+    let isValid = true;
+    if (node.left) isValid &&= comparator(node.left.data, node.data) < 0;
+    if (node.right) isValid &&= comparator(node.right.data, node.data) > 0;
+
+    return (
+      isValid &&
+      validateBSTInvariant(node.left) &&
+      validateBSTInvariant(node.right)
+    );
+  };
+
   /***************** PUBLIC METHODS *******************/
 
   /** Get this tree's size (number of nodes in the tree) */
@@ -309,6 +330,8 @@ export function BinarySearchTree(compareFunc = compare()) {
    * Clear this tree by removing all nodes and reset nodeCount
    */
   this.clear = () => (root = clear(root));
+
+  this.validateBSTInvariant = () => validateBSTInvariant(root);
 
   /**
    * Get an iterator to traverse the tree based on the order type the method receives.
