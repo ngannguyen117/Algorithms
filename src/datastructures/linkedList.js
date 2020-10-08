@@ -55,6 +55,13 @@ export function DoublyLinkedList(comparator = compare()) {
     this.data = data;
     this.prev = prev;
     this.next = next;
+
+    /**
+     * Compare this node to a particular node
+     * @param {Node} other other node that this node wants to compare to
+     * @returns {-1 | 0 | 1} this < other: -1, this === other: 0, this > other: 1
+     */
+    this.compareTo = other => comparator(this.data, other.data);
   }
 
   let length = 0; // number of nodes in the list
@@ -313,6 +320,13 @@ export function SinglyLinkedList(comparator = compare()) {
   function Node(data, next = null) {
     this.data = data;
     this.next = next;
+
+    /**
+     * Compare this node to a particular node
+     * @param {Node} other other node that this node wants to compare to
+     * @returns {-1 | 0 | 1} this < other: -1, this === other: 0, this > other: 1
+     */
+    this.compareTo = other => comparator(this.data, other.data);
   }
 
   let length = 0;
@@ -447,7 +461,7 @@ export function SinglyLinkedList(comparator = compare()) {
    * Get the node at index - 1
    * @param {number} index the index of the node where we want to get the previous node from
    */
-  this.getPrevNode = index => {
+  const getPrevNode = index => {
     let trav = head;
     for (let i = 0; i < index - 1; i++) trav = trav.next;
     return trav;
@@ -461,7 +475,7 @@ export function SinglyLinkedList(comparator = compare()) {
     if (this.isEmpty()) return;
     if (length === 1) return this.removeFirst();
 
-    let prevNode = this.getPrevNode(length - 1);
+    let prevNode = getPrevNode(length - 1);
     prevNode = removeNextNode(prevNode);
     const data = tail.data;
     tail = prevNode;
@@ -479,7 +493,7 @@ export function SinglyLinkedList(comparator = compare()) {
     if (index === 0) return this.removeFirst();
     if (index === length - 1) return this.removeLast();
 
-    let prevNode = this.getPrevNode(index);
+    let prevNode = getPrevNode(index);
     const data = prevNode.next.data;
     removeNextNode(prevNode);
 

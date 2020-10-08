@@ -260,6 +260,14 @@ const linkedListTest = (List, listName) => {
         expect(list.contains(3)).toBeFalsy();
         expect(list.contains(10)).toBeTruthy();
       });
+
+      test('Node.compareTo(other) should return -1, 0, or 1', () => {
+        const iter = list[Symbol.iterator]();
+        const node1 = iter.next().value; // 0
+        const node2 = iter.next().value; // 1
+        expect(node1.compareTo(node2)).toBe(-1);
+        expect(node2.compareTo(node1)).toBe(1);
+      });
     });
   });
 };
