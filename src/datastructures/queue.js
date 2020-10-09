@@ -65,7 +65,7 @@ export function Queue(firstElement = null) {
 
   this.toString = () => {
     const values = [];
-    for (let node of this[Symbol.iterator]()) values.push(node.data);
+    for (let data of this) values.push(data);
     return values.join(' ');
   };
 }

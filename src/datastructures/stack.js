@@ -65,12 +65,12 @@ export function ListStack(firstElement = null) {
   if (firstElement) this.push(firstElement);
 
   this[Symbol.iterator] = function* () {
-    for (let node of list[Symbol.iterator]()) yield node.data;
+    for (let data of list) yield data;
   };
 
   this.toString = () => {
     const values = [];
-    for (let value of this[Symbol.iterator]()) values.push(value);
+    for (let value of this) values.push(value);
     return values.reverse().join(' ');
   };
 }
