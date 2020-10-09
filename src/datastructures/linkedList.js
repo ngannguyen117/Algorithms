@@ -58,10 +58,14 @@ export function DoublyLinkedList(comparator = compare()) {
 
     /**
      * Compare this node to a particular node
-     * @param {Node} other other node that this node wants to compare to
+     * @param {Node} other can be a Node object or the type of this.data
      * @returns {-1 | 0 | 1} this < other: -1, this === other: 0, this > other: 1
      */
-    this.compareTo = other => comparator(this.data, other.data);
+    this.compareTo = other => {
+      let value = other;
+      if (other instanceof Node) value = other.data;
+      return comparator(this.data, value);
+    };
   }
 
   let length = 0; // number of nodes in the list
@@ -234,16 +238,16 @@ export function DoublyLinkedList(comparator = compare()) {
    * @param {string | number} value value of a node to be removed
    * @returns {boolean} true if the node with that value is removed, false if there's no node with that value
    */
-  this.removeFirstNodeWithValue = value => {
+  this.removeValue = value => {
     if (this.isEmpty()) return false;
 
-    if (comparator(value, head.data) === 0) {
+    if (head.compareTo(value) === 0) {
       this.removeFirst();
       return true;
     }
 
     for (let trav = head; trav; trav = trav.next)
-      if (comparator(value, trav.data) === 0) {
+      if (trav.compareTo(value) === 0) {
         this.removeNode(trav);
         return true;
       }
@@ -256,12 +260,12 @@ export function DoublyLinkedList(comparator = compare()) {
    * @param {string | number} value value of a node to be removed
    * @returns {boolean} true if nodes with that value are removed, false if there's no node with that value
    */
-  this.removeAllNodesWithValue = value => {
+  this.removeAllValue = value => {
     if (this.isEmpty()) return false;
 
     let found = false;
     for (let trav = head; trav; trav = trav.next)
-      if (comparator(value, trav.data) === 0) {
+      if (trav.compareTo(value) === 0) {
         const prev = trav.prev;
         this.removeNode(trav);
         if (prev) trav = prev;
@@ -280,7 +284,7 @@ export function DoublyLinkedList(comparator = compare()) {
   this.indexOf = value => {
     let trav = head;
     for (let i = 0; trav, i < length; trav = trav.next, i++)
-      if (comparator(value, trav.data) === 0) return i;
+      if (trav.compareTo(value) === 0) return i;
     return -1;
   };
 
@@ -295,7 +299,7 @@ export function DoublyLinkedList(comparator = compare()) {
    * Define a iterator for the list so that we can use it as an iterator. For each iteration, the iterator returns a node.
    */
   this[Symbol.iterator] = function* () {
-    for (let trav = head; trav; trav = trav.next) yield trav;
+    for (let trav = head; trav; trav = trav.next) yield trav.data;
   };
 
   /**
@@ -303,7 +307,7 @@ export function DoublyLinkedList(comparator = compare()) {
    */
   this.toString = () => {
     const values = [];
-    for (let node of this[Symbol.iterator]()) values.push(node.data);
+    for (let data of this) values.push(data);
     return values.join(' ');
   };
 }
@@ -323,10 +327,14 @@ export function SinglyLinkedList(comparator = compare()) {
 
     /**
      * Compare this node to a particular node
-     * @param {Node} other other node that this node wants to compare to
+     * @param {Node} other can be a Node object or the type of this.data
      * @returns {-1 | 0 | 1} this < other: -1, this === other: 0, this > other: 1
      */
-    this.compareTo = other => comparator(this.data, other.data);
+    this.compareTo = other => {
+      let value = other;
+      if (other instanceof Node) value = other.data;
+      return comparator(this.data, value);
+    };
   }
 
   let length = 0;
@@ -505,12 +513,12 @@ export function SinglyLinkedList(comparator = compare()) {
    * @param {string | number} value
    * @param {boolean} single whether to delete only a single first value or not
    */
-  const removeNodesWithValueHelper = (value, single = false) => {
-    if (this.isEmpty() || (length === 1 && comparator(value, head.data)))
+  const removeValueHelper = (value, single = false) => {
+    if (this.isEmpty() || (length === 1 && head.compareTo(value) !== 0))
       return false;
 
     let found = false;
-    if (comparator(value, head.data) === 0) {
+    if (head.compareTo(value) === 0) {
       this.removeFirst();
       if (single) return true;
       found = true;
@@ -518,7 +526,7 @@ export function SinglyLinkedList(comparator = compare()) {
 
     let trav = head;
     while (trav && trav.next) {
-      if (comparator(value, trav.next.data) === 0) {
+      if (trav.next.compareTo(value) === 0) {
         const node = removeNextNode(trav);
         if (!node.next) tail = node;
         found = true;
@@ -535,15 +543,14 @@ export function SinglyLinkedList(comparator = compare()) {
    * @param {string | number} value value of a node to be removed
    * @returns {boolean} true if the node with that value is removed, false if there's no node with that value
    */
-  this.removeFirstNodeWithValue = value =>
-    removeNodesWithValueHelper(value, true);
+  this.removeValue = value => removeValueHelper(value, true);
 
   /**
    * Remove the all nodes with the specified value. O(n)
    * @param {string | number} value value of a node to be removed
    * @returns {boolean} true if nodes with that value are removed, false if there's no node with that value
    */
-  this.removeAllNodesWithValue = value => removeNodesWithValueHelper(value);
+  this.removeAllValue = value => removeValueHelper(value);
 
   /**
    * Find the first index of the node with the specified value. O(n)
@@ -553,7 +560,7 @@ export function SinglyLinkedList(comparator = compare()) {
   this.indexOf = value => {
     let trav = head;
     for (let i = 0; trav, i < length; trav = trav.next, i++)
-      if (comparator(value, trav.data) === 0) return i;
+      if (trav.compareTo(value) === 0) return i;
     return -1;
   };
 
@@ -568,12 +575,12 @@ export function SinglyLinkedList(comparator = compare()) {
    * Define a iterator for the list so that we can use it as an iterator. For each iteration, the iterator returns a node.
    */
   this[Symbol.iterator] = function* () {
-    for (let trav = head; trav; trav = trav.next) yield trav;
+    for (let trav = head; trav; trav = trav.next) yield trav.data;
   };
 
   this.toString = () => {
     const values = [];
-    for (let node of this[Symbol.iterator]()) values.push(node.data);
+    for (let data of this) values.push(data.toString());
     return values.join(' ');
   };
 }

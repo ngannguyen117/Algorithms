@@ -39,9 +39,9 @@ const linkedListTest = (List, listName) => {
         expect(() => list.removeAt(1)).toThrow('Index out of range');
       });
 
-      test('Calling removeFirstNodeWithValue or removeAllNodesWithValue on an empty list will return false', () => {
-        expect(list.removeFirstNodeWithValue()).toBeFalsy();
-        expect(list.removeAllNodesWithValue()).toBeFalsy();
+      test('Calling removeValue or removeAllValue on an empty list will return false', () => {
+        expect(list.removeValue()).toBeFalsy();
+        expect(list.removeAllValue()).toBeFalsy();
       });
     });
 
@@ -96,15 +96,15 @@ const linkedListTest = (List, listName) => {
         expect(() => list.insert(2)).not.toThrow('Duplicate values');
       });
 
-      test('Calling removeFirstNodeWithValue should returns true if that element is in the head, otherwise, return false', () => {
-        expect(list.removeFirstNodeWithValue(0)).toBeFalsy();
-        expect(list.removeFirstNodeWithValue(1)).toBeTruthy();
+      test('Calling removeValue should returns true if that element is in the head, otherwise, return false', () => {
+        expect(list.removeValue(0)).toBeFalsy();
+        expect(list.removeValue(1)).toBeTruthy();
         expect(list.size()).toBe(0);
       });
 
-      test('Calling removeAllNodesWithValue should returns true if that element is in the head, otherwise, return false', () => {
-        expect(list.removeAllNodesWithValue(0)).toBeFalsy();
-        expect(list.removeAllNodesWithValue(1)).toBeTruthy();
+      test('Calling removeAllValue should returns true if that element is in the head, otherwise, return false', () => {
+        expect(list.removeAllValue(0)).toBeFalsy();
+        expect(list.removeAllValue(1)).toBeTruthy();
         expect(list.size()).toBe(0);
       });
     });
@@ -181,18 +181,18 @@ const linkedListTest = (List, listName) => {
         expect(list.isEmpty()).toBeTruthy();
       });
 
-      test('Calling removeFirstNodeWithValue and removeAllNodesWithValue returns true if the node(s) found and removed, or false if not found', () => {
+      test('Calling removeValue and removeAllValue returns true if the node(s) found and removed, or false if not found', () => {
         // Initial values 0 1 2 5 9 10
-        let result = list.removeFirstNodeWithValue(22);
+        let result = list.removeValue(22);
         expect(result).toBeFalsy();
         expect(list.size()).toBe(6);
 
-        result = list.removeFirstNodeWithValue(0);
+        result = list.removeValue(0);
         expect(result).toBeTruthy();
         expect(list.size()).toBe(5);
         expect(list.toString()).toBe('1 2 5 9 10');
 
-        result = list.removeFirstNodeWithValue(2);
+        result = list.removeValue(2);
         expect(result).toBeTruthy();
         expect(list.size()).toBe(4);
         expect(list.toString()).toBe('1 5 9 10');
@@ -203,22 +203,22 @@ const linkedListTest = (List, listName) => {
         list.addLast(9);
         expect(list.toString()).toBe('9 1 5 1 9 10 9');
 
-        result = list.removeFirstNodeWithValue(1);
+        result = list.removeValue(1);
         expect(result).toBeTruthy();
         expect(list.size()).toBe(6);
         expect(list.toString()).toBe('9 5 1 9 10 9');
 
-        result = list.removeAllNodesWithValue(2);
+        result = list.removeAllValue(2);
         expect(result).toBeFalsy();
         expect(list.size()).toBe(6);
         expect(list.toString()).toBe('9 5 1 9 10 9');
 
-        result = list.removeAllNodesWithValue(1);
+        result = list.removeAllValue(1);
         expect(result).toBeTruthy();
         expect(list.size()).toBe(5);
         expect(list.toString()).toBe('9 5 9 10 9');
 
-        result = list.removeAllNodesWithValue(9);
+        result = list.removeAllValue(9);
         expect(result).toBeTruthy();
         expect(list.size()).toBe(2);
         expect(list.toString()).toBe('5 10');
@@ -259,14 +259,6 @@ const linkedListTest = (List, listName) => {
       test('Contains method should return true if the value exist, otherwise false', () => {
         expect(list.contains(3)).toBeFalsy();
         expect(list.contains(10)).toBeTruthy();
-      });
-
-      test('Node.compareTo(other) should return -1, 0, or 1', () => {
-        const iter = list[Symbol.iterator]();
-        const node1 = iter.next().value; // 0
-        const node2 = iter.next().value; // 1
-        expect(node1.compareTo(node2)).toBe(-1);
-        expect(node2.compareTo(node1)).toBe(1);
       });
     });
   });
