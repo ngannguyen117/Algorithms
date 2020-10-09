@@ -223,32 +223,17 @@ describe('Test AVL Tree', () => {
       );
     });
 
-    test('PreOrder traversal should throw error if there are any changes while traversing', () => {
-      let iter = avlTree.traverse(TreeTraversalOrder.PRE_ORDER);
-      expect(iter.next().value).toBe(28);
-      avlTree.remove(15);
-      expect(() => iter.next()).toThrow('Concurrent Modification');
-    });
+    test('traversal should throw error if there are any changes to the tree size', () => {
+      const traverse = order => {
+        expect(() => {
+          for (let value of avlTree.traverse(order)) avlTree.remove(value);
+        }).toThrow('Concurrent Modification');
+      };
 
-    test('InOrder traversal should throw error if there are any changes while traversing', () => {
-      let iter = avlTree.traverse(TreeTraversalOrder.IN_ORDER);
-      expect(iter.next().value).toBe(1);
-      avlTree.remove(15);
-      expect(() => iter.next()).toThrow('Concurrent Modification');
-    });
-
-    test('PostOrder traversal should throw error if there are any changes while traversing', () => {
-      let iter = avlTree.traverse(TreeTraversalOrder.POST_ORDER);
-      expect(iter.next().value).toBe(1);
-      avlTree.remove(15);
-      expect(() => iter.next()).toThrow('Concurrent Modification');
-    });
-
-    test('LevelOrder traversal should throw error if there are any changes while traversing', () => {
-      let iter = avlTree.traverse(TreeTraversalOrder.LEVEL_ORDER);
-      expect(iter.next().value).toBe(28);
-      avlTree.remove(15);
-      expect(() => iter.next()).toThrow('Concurrent Modification');
+      traverse(TreeTraversalOrder.PRE_ORDER);
+      traverse(TreeTraversalOrder.IN_ORDER);
+      traverse(TreeTraversalOrder.POST_ORDER);
+      traverse(TreeTraversalOrder.LEVEL_ORDER);
     });
   });
 });

@@ -316,32 +316,17 @@ describe('Test Binary Search Tree', () => {
         );
       });
 
-      test('PreOrder traversal should throw error if there are any changes while traversing', () => {
-        let iter = bst.traverse(TreeTraversalOrder.PRE_ORDER);
-        expect(iter.next().value).toBe(28);
-        bst.remove(15);
-        expect(() => iter.next()).toThrow('Concurrent Modification');
-      });
+      test('traversal should throw error if there are any changes to the tree size', () => {
+        const traverse = order => {
+          expect(() => {
+            for (let value of bst.traverse(order)) bst.remove(value);
+          }).toThrow('Concurrent Modification');
+        };
 
-      test('InOrder traversal should throw error if there are any changes while traversing', () => {
-        let iter = bst.traverse(TreeTraversalOrder.IN_ORDER);
-        expect(iter.next().value).toBe(9);
-        bst.remove(15);
-        expect(() => iter.next()).toThrow('Concurrent Modification');
-      });
-
-      test('PostOrder traversal should throw error if there are any changes while traversing', () => {
-        let iter = bst.traverse(TreeTraversalOrder.POST_ORDER);
-        expect(iter.next().value).toBe(15);
-        bst.remove(15);
-        expect(() => iter.next()).toThrow('Concurrent Modification');
-      });
-
-      test('LevelOrder traversal should throw error if there are any changes while traversing', () => {
-        let iter = bst.traverse(TreeTraversalOrder.LEVEL_ORDER);
-        expect(iter.next().value).toBe(28);
-        bst.remove(15);
-        expect(() => iter.next()).toThrow('Concurrent Modification');
+        traverse(TreeTraversalOrder.PRE_ORDER);
+        traverse(TreeTraversalOrder.IN_ORDER);
+        traverse(TreeTraversalOrder.POST_ORDER);
+        traverse(TreeTraversalOrder.LEVEL_ORDER);
       });
 
       test('print tree', () => {
