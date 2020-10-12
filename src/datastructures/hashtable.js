@@ -27,20 +27,315 @@
  *
  * Open Addressing:
  *  - store the object at another available spot in the array by offseting its original hashed value
+ *  - various probing functions: linear probing, quadratic probing, double hashing
  */
 
 import { SinglyLinkedList } from './linkedList';
 import { hashCode } from '../utils/hash-code';
 
-export function Entry(key, value) {
+function Entry(key, value) {
   this.key = key;
   this.value = value;
-  this.hash = hashCode(typeof key === 'string' ? key : key.toString());
+  this.hash = hashCode(key);
   this.toString = () => `${this.key}: ${this.value}`;
 }
 
-const DEFAULT_CAPACITY = 3;
-const DEFAULT_LOAD_FACTOR = 0.75;
+const gcd = (a, b) => {
+  if (b === 0) return a;
+  return gcd(b, a % b);
+};
+
+const DEFAULT_CAPACITY = 7;
+const DEFAULT_LOAD_FACTOR = 0.65;
+const TOMSTONE = 'TOMSTONE';
+const LINEAR_CONSTANT = 17; // Used in linear probing, can be any number. The table capacity will be adjusted so that gcd(capacity, LINEAR_CONSTANT) = 1
+
+/**
+ * Abstract class for Hash Tables using Open Addressing as hash collision resolution
+ * @class HashTableOpenAddressing
+ */
+class HashTableOpenAddressing {
+  #capacity = DEFAULT_CAPACITY;
+  #maxLoadFactor = DEFAULT_LOAD_FACTOR;
+  #table;
+  #threshold;
+  #usedSlots = 0; // number of used slots in the table (including slot marked as deleted)
+  #size = 0; // number of unique keys currently inside the table
+  #modificationCount = 0;
+
+  // Abstract methods that dictate how the probing is to actually occur depending on the probing function used
+  /**
+   * Adjust the table's capacity after an increase in size
+   * @param {number} capacity current table's capacity
+   * @returns {number} adjusted capacity
+   */
+  #adjustCapacity;
+  #setupProbing;
+  #probe;
+
+  constructor(adjustCapacity, setupProbing, probe, capacity, maxLoadFactor) {
+    if (this.constructor === HashTableOpenAddressing)
+      throw new Error('Abstract class cannot be instantiated');
+    if (capacity < 0) throw new Error('Illegal capacity');
+    if (maxLoadFactor <= 0 || maxLoadFactor > 1)
+      throw new Error('Illegal load factor');
+
+    // Initialize abstract methods
+    this.#adjustCapacity = adjustCapacity;
+    this.#setupProbing = setupProbing;
+    this.#probe = probe;
+
+    // Initialize private properties
+    if (capacity) this.#capacity = Math.max(this.#capacity, capacity);
+    if (maxLoadFactor) this.#maxLoadFactor = maxLoadFactor;
+
+    this.#capacity = this.#adjustCapacity(this.#capacity);
+    this.#threshold = Math.floor(this.#capacity * this.#maxLoadFactor);
+    this.#table = [...Array(this.#capacity)]; // Entry[]
+  }
+
+  //---------------------------- HELPER METHODS -----------------------------
+  #isInvalidKey(key) {
+    return key == null || key === '';
+  }
+
+  #normalizeIndex(hash) {
+    return (hash & 0x7fffffff) % this.#capacity;
+  }
+
+  #resizeTable() {
+    this.#capacity = 2 * this.#capacity + 1;
+    this.#capacity = this.#adjustCapacity(this.#capacity);
+    this.#threshold = Math.floor(this.#capacity * this.#maxLoadFactor);
+
+    // create a new table with new capacity and switch reference with the current table
+    let oldTable = [...Array(this.#capacity)];
+    const temp = this.#table;
+    this.#table = oldTable;
+    oldTable = temp;
+
+    // reset size and usedSlots since we'll perform insertion on all non-empty entries again
+    this.#size = 0;
+    this.#usedSlots = 0;
+
+    for (let entry of oldTable)
+      if (entry && entry.key !== TOMSTONE) this.insert(entry.key, entry.value);
+
+    oldTable = [];
+  }
+
+  //---------------------------- PUBLIC METHODS -----------------------------
+  clear() {
+    this.#table = [];
+    this.#size = 0;
+    this.#usedSlots = 0;
+    this.#modificationCount++;
+  }
+
+  size() {
+    return this.#size;
+  }
+
+  isEmpty() {
+    return this.#size === 0;
+  }
+
+  hasKey(key) {
+    if (this.#isInvalidKey(key)) return false;
+
+    this.#setupProbing(key);
+    const offset = this.#normalizeIndex(hashCode(key));
+
+    let j = -1; // to track the index of the first tombstone occurence
+    let x = 1;
+    let i = offset;
+    while (true) {
+      if (!this.#table[i]) return false;
+
+      if (this.#table[i].key === TOMSTONE) {
+        // record the first deleted cell index to perform lazy relocation
+        if (j === -1) j = i;
+      } else if (this.#table[i].key === key) {
+        if (j !== -1) {
+          // Previously encounter a deleted slot. We move the entry in i to j so that
+          // if we need to find this key again, we'll find it faster. (lazy relocation)
+          this.#table[j] = this.#table[i];
+          this.#table[i] = new Entry(TOMSTONE);
+        }
+
+        return true;
+      }
+
+      i = this.#normalizeIndex(offset + this.#probe(x++));
+    }
+  }
+
+  contains(key) {
+    return this.hasKey(key);
+  }
+
+  get(key) {
+    if (this.#isInvalidKey(key)) return null;
+
+    this.#setupProbing(key);
+    const offset = this.#normalizeIndex(hashCode(key));
+
+    let j = -1; // to track the index of the first tombstone occurence
+    let x = 1;
+    let i = offset;
+    while (true) {
+      if (!this.#table[i]) return null;
+
+      if (this.#table[i].key === TOMSTONE) {
+        // record the first deleted cell index to perform lazy relocation
+        if (j === -1) j = i;
+      } else if (this.#table[i].key === key) {
+        if (j === -1) return this.#table[i].value;
+
+        this.#table[j] = this.#table[i];
+        this.#table[i] = new Entry(TOMSTONE);
+        return this.#table[j].value;
+      }
+
+      i = this.#normalizeIndex(offset + this.#probe(x++));
+    }
+  }
+
+  insert(key, value) {
+    if (this.#isInvalidKey(key)) throw new Error('Invalid Key');
+    if (this.#usedSlots >= this.#threshold) this.#resizeTable();
+
+    this.#setupProbing(key);
+    const offset = this.#normalizeIndex(hashCode(key));
+
+    let j = -1; // to track the index of the first tombstone occurence
+    let x = 1;
+    let i = offset;
+
+    while (true) {
+      // empty slot
+      if (!this.#table[i]) {
+        // No tombstone found before index i
+        if (j === -1) {
+          this.#usedSlots++;
+          this.#size++;
+          this.#table[i] = new Entry(key, value);
+        } else {
+          this.#size++;
+          this.#table[j] = new Entry(key, value);
+        }
+
+        this.#modificationCount++;
+        return null;
+      }
+
+      // this slot is either not empty or it is a tombstone
+      if (this.#table[i].key === TOMSTONE) {
+        if (j === -1) j = i;
+      } else if (this.#table[i].key === key) {
+        // This slot contains the same key needed to be inserted, update the entry's value
+        const oldValue = this.#table[i].value;
+        if (j === -1) this.#table[i].value = value;
+        else {
+          this.#table[i] = this.#table[j];
+          this.#table[j] = new Entry(key, value);
+        }
+
+        this.#modificationCount++;
+        return oldValue;
+      }
+
+      i = this.#normalizeIndex(offset + this.#probe(x++));
+    }
+  }
+
+  put(key, value) {
+    return this.insert(key, value);
+  }
+
+  add(key, value) {
+    return this.insert(key, value);
+  }
+
+  remove(key) {
+    if (this.#isInvalidKey(key)) return null;
+
+    this.#setupProbing(key);
+    const offset = this.#normalizeIndex(hashCode(key));
+
+    let x = 1;
+    let i = offset;
+
+    while (true) {
+      if (!this.#table[i]) return null;
+      if (this.#table[i].key === key) {
+        this.#size--;
+        this.#modificationCount++;
+        const value = this.#table[i].value;
+        this.#table[i] = new Entry(TOMSTONE);
+        return value;
+      }
+
+      i = this.#normalizeIndex(offset + this.#probe(x++));
+    }
+  }
+
+  keys() {
+    const keys = [];
+    for (let entry of this.#table)
+      if (entry && entry.key !== TOMSTONE) keys.push(entry.key);
+    return keys;
+  }
+
+  values() {
+    const values = [];
+    for (let entry of this.#table)
+      if (entry && entry.key !== TOMSTONE) values.push(entry.value);
+    return values;
+  }
+
+  *[Symbol.iterator]() {
+    const modificationCount = this.#modificationCount;
+    for (let entry of this.#table) {
+      if (modificationCount !== this.#modificationCount)
+        throw new Error('Concurrent Modification');
+      if (entry && entry.key !== TOMSTONE) yield entry.key;
+    }
+  }
+
+  toString() {
+    let str = '{';
+    let count = 0;
+    for (let entry of this.#table)
+      if (entry && entry.key !== TOMSTONE)
+        str = str.concat(
+          `${entry.toString()}${++count < this.#size ? ', ' : ''}`
+        );
+    return str.concat('}');
+  }
+}
+
+/**
+ * @class HashTableLinearProbing
+ * @extends {HashTableOpenAddressing}
+ */
+export class HashTableLinearProbing extends HashTableOpenAddressing {
+  constructor(capacity, maxLoadFactor) {
+    const adjustCapacity = function (c) {
+      let newCapacity = c;
+      while (gcd(LINEAR_CONSTANT, newCapacity) !== 1) newCapacity++;
+      return newCapacity;
+    };
+
+    const probe = function (x) {
+      return LINEAR_CONSTANT * x;
+    };
+
+    const setupProbing = function (key) {};
+
+    super(adjustCapacity, setupProbing, probe, capacity, maxLoadFactor);
+  }
+}
 
 export function HashTableSeparateChaining(
   capacity = DEFAULT_CAPACITY,
@@ -163,7 +458,7 @@ export function HashTableSeparateChaining(
     size = 0;
   };
 
-  this.hasKey = key => seekEntry(key);
+  this.hasKey = key => seekEntry(key) !== null;
   this.contains = key => this.hasKey(key);
 
   /**
