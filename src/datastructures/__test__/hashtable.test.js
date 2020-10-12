@@ -1,4 +1,7 @@
-import { HashTableSeparateChaining } from '../hashtable';
+import {
+  HashTableSeparateChaining,
+  HashTableLinearProbing,
+} from '../hashtable';
 
 const testHashTable = (HashTable, subtitle) => {
   describe(`Test Hash Table with ${subtitle}`, () => {
@@ -43,15 +46,18 @@ const testHashTable = (HashTable, subtitle) => {
         expect(ht.values()).toStrictEqual([]);
       });
 
-      test('remove, get, hasKey, contains any keys should be null', () => {
+      test('remove, get any keys should be null', () => {
         expect(ht.remove()).toBeNull();
         expect(ht.remove(3)).toBeNull();
         expect(ht.get()).toBeNull();
         expect(ht.get('4')).toBeNull();
-        expect(ht.hasKey()).toBeNull();
-        expect(ht.hasKey('hello')).toBeNull();
-        expect(ht.contains()).toBeNull();
-        expect(ht.contains('hi')).toBeNull();
+      });
+
+      test('hasKey, contains any keys should be false', () => {
+        expect(ht.hasKey()).toBeFalsy();
+        expect(ht.hasKey('hello')).toBeFalsy();
+        expect(ht.contains()).toBeFalsy();
+        expect(ht.contains('hi')).toBeFalsy();
       });
     });
 
@@ -79,6 +85,7 @@ const testHashTable = (HashTable, subtitle) => {
       test('Update existing key with new value', () => {
         expect(ht.put(1, 5)).toBeNull();
         expect(ht.size()).toBe(1);
+        console.log(ht.toString());
         expect(ht.get(1)).toBe(5);
 
         expect(ht.insert(1, 10)).toBe(5);
@@ -93,6 +100,15 @@ const testHashTable = (HashTable, subtitle) => {
     });
 
     describe('Test non-empty hash table', () => {
+      const remove = () => {
+        ht.remove('A');
+        ht.remove('E');
+        ht.remove('F');
+        ht.remove('katy');
+        ht.remove('kitten');
+        ht.remove('thomas');
+      };
+
       beforeEach(() => {
         ht = new HashTable();
         ht.add('john', 30);
@@ -100,8 +116,13 @@ const testHashTable = (HashTable, subtitle) => {
         ht.add('katy', 3);
         ht.add('josh', 0);
         ht.add('thomas', 10);
+        ht.add('A', 3);
+        ht.add('D', 5);
+        ht.add('F', 35);
+        ht.add('E', 60);
+        ht.add('X', 23);
 
-        expect(ht.size()).toBe(5);
+        expect(ht.size()).toBe(10);
       });
 
       test('Hash table iterator should iterate through all the keys/values of the table', () => {
@@ -122,14 +143,31 @@ const testHashTable = (HashTable, subtitle) => {
 
       test('remove() should remove entries from the table', () => {
         expect(ht.remove(3)).toBeNull();
-        expect(ht.size()).toBe(5);
+        expect(ht.size()).toBe(10);
 
-        expect(ht.remove('josh')).toBe(0);
-        expect(ht.size()).toBe(4);
-        expect(ht.hasKey('josh')).toBeFalsy();
+        expect(ht.remove('X')).toBe(23);
+        expect(ht.size()).toBe(9);
+        expect(ht.hasKey('X')).toBeFalsy();
+      });
+
+      test('test remove and hasKey together', () => {
+        remove();
+        expect(ht.hasKey('X')).toBe(true);
+      });
+
+      test('test remove and insert together', () => {
+        remove();
+        expect(ht.add('X', 4)).toBe(23);
+        expect(ht.insert('thomas', 40)).toBeNull();
+      });
+
+      test('test remove and get together', () => {
+        remove();
+        expect(ht.get('X')).toBe(23);
       });
     });
   });
 };
 
 testHashTable(HashTableSeparateChaining, 'Separate Chaining');
+testHashTable(HashTableLinearProbing, 'Open Addressing - Linear Probing');
