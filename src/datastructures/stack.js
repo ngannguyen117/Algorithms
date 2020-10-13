@@ -31,10 +31,11 @@ import { SinglyLinkedList } from './linkedList';
  */
 export function ListStack(firstElement = null) {
   const list = new SinglyLinkedList();
+  if (firstElement) list.addFirst(firstElement);
 
-  this.size = () => list.size();
-  this.isEmpty = () => list.size() === 0;
-  this.clear = () => list.clear();
+  this.size = list.size;
+  this.isEmpty = list.isEmpty;
+  this.clear = list.clear;
 
   /**
    * Push new value to the front of the stack. O(1)
@@ -62,11 +63,7 @@ export function ListStack(firstElement = null) {
     return list.peakFirst();
   };
 
-  if (firstElement) this.push(firstElement);
-
-  this[Symbol.iterator] = function* () {
-    for (let data of list) yield data;
-  };
+  this[Symbol.iterator] = list[Symbol.iterator];
 
   this.toString = () => {
     const values = [];
@@ -82,6 +79,7 @@ export function ListStack(firstElement = null) {
  */
 export function ArrayStack(firstElement = null) {
   let data = [];
+  if (firstElement) data.push(firstElement);
 
   this.size = () => data.length;
   this.isEmpty = () => data.length === 0;
@@ -110,8 +108,6 @@ export function ArrayStack(firstElement = null) {
     if (this.isEmpty()) throw new Error('Stack Empty');
     return data.pop();
   };
-
-  if (firstElement) this.push(firstElement);
 
   this[Symbol.iterator] = function* () {
     for (let i = this.size() - 1; i >= 0; i--) yield data[i];
