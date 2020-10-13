@@ -1,6 +1,7 @@
 import {
   HashTableSeparateChaining,
   HashTableLinearProbing,
+  HashTableQuadraticProbing,
 } from '../hashtable';
 
 const testHashTable = (HashTable, subtitle) => {
@@ -85,7 +86,6 @@ const testHashTable = (HashTable, subtitle) => {
       test('Update existing key with new value', () => {
         expect(ht.put(1, 5)).toBeNull();
         expect(ht.size()).toBe(1);
-        console.log(ht.toString());
         expect(ht.get(1)).toBe(5);
 
         expect(ht.insert(1, 10)).toBe(5);
@@ -171,3 +171,4 @@ const testHashTable = (HashTable, subtitle) => {
 
 testHashTable(HashTableSeparateChaining, 'Separate Chaining');
 testHashTable(HashTableLinearProbing, 'Open Addressing - Linear Probing');
+testHashTable(HashTableQuadraticProbing, 'Open Addressing - Quadratic Probing');

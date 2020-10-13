@@ -72,8 +72,16 @@ class HashTableOpenAddressing {
   #adjustCapacity;
   #setupProbing;
   #probe;
+  #increaseCapacity;
 
-  constructor(adjustCapacity, setupProbing, probe, capacity, maxLoadFactor) {
+  constructor(
+    adjustCapacity,
+    setupProbing,
+    probe,
+    increaseCapacity,
+    capacity,
+    maxLoadFactor
+  ) {
     if (this.constructor === HashTableOpenAddressing)
       throw new Error('Abstract class cannot be instantiated');
     if (capacity < 0) throw new Error('Illegal capacity');
@@ -84,6 +92,7 @@ class HashTableOpenAddressing {
     this.#adjustCapacity = adjustCapacity;
     this.#setupProbing = setupProbing;
     this.#probe = probe;
+    this.#increaseCapacity = increaseCapacity;
 
     // Initialize private properties
     if (capacity) this.#capacity = Math.max(this.#capacity, capacity);
@@ -104,7 +113,7 @@ class HashTableOpenAddressing {
   }
 
   #resizeTable() {
-    this.#capacity = 2 * this.#capacity + 1;
+    this.#capacity = this.#increaseCapacity(this.#capacity);
     this.#capacity = this.#adjustCapacity(this.#capacity);
     this.#threshold = Math.floor(this.#capacity * this.#maxLoadFactor);
 
@@ -316,24 +325,55 @@ class HashTableOpenAddressing {
 }
 
 /**
+ * An implementation of Hash Table using Open Addressing with Linear probing as collision resolution method
  * @class HashTableLinearProbing
  * @extends {HashTableOpenAddressing}
  */
 export class HashTableLinearProbing extends HashTableOpenAddressing {
-  constructor(capacity, maxLoadFactor) {
-    const adjustCapacity = function (c) {
-      let newCapacity = c;
-      while (gcd(LINEAR_CONSTANT, newCapacity) !== 1) newCapacity++;
-      return newCapacity;
+  constructor(cap, loadFactor) {
+    const probe = x => LINEAR_CONSTANT * x;
+    const setProbe = () => {};
+    const incCap = capacity => 2 * capacity + 1;
+    const adjCap = capacity => {
+      while (gcd(LINEAR_CONSTANT, capacity) !== 1) capacity++;
+      return capacity;
     };
 
-    const probe = function (x) {
-      return LINEAR_CONSTANT * x;
+    super(adjCap, setProbe, probe, incCap, cap, loadFactor);
+  }
+}
+
+/**
+ * An implementation of Hash Table using Open Addressing with Quadratic probing as collision resolution method.
+ *
+ * In this implementation, we use the following probing function H(k, x) = hashCode(k) + f(x) mod 2^n.
+ * (f(x) = (x^2 + x) / 2)
+ *
+ * This probing function guarantees to find an empty cell (It generates all numbers in range [0, 2^n)
+ * without repetition for the first 2^n numbers.
+ * @class HashTableQuadraticProbing
+ * @extends {HashTableOpenAddressing}
+ */
+export class HashTableQuadraticProbing extends HashTableOpenAddressing {
+  constructor(cap, loadFactor) {
+    const highestOneBit = i => {
+      i |= i >> 1;
+      i |= i >> 2;
+      i |= i >> 4;
+      i |= i >> 8;
+      i |= i >> 16;
+      return i - (i >>> 1);
     };
 
-    const setupProbing = function (key) {};
+    const probe = x => LINEAR_CONSTANT * x;
+    const setProbe = () => {};
+    const incCap = capacity => 1 << (32 - Math.clz32(capacity));
+    const adjCap = capacity => {
+      const pow2 = highestOneBit(capacity);
+      return capacity === pow2 ? capacity : incCap(capacity);
+    };
 
-    super(adjustCapacity, setupProbing, probe, capacity, maxLoadFactor);
+    super(adjCap, setProbe, probe, incCap, cap, loadFactor);
   }
 }
 
