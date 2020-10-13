@@ -39,6 +39,7 @@
 
 import { compare } from '../utils/compare';
 
+
 /**
  * Doubly Linked List that allows duplicate values.
  *
@@ -97,16 +98,14 @@ export function DoublyLinkedList(comparator = compare()) {
    * Clear the list by removing all nodes's pointers. O(n)
    */
   this.clear = () => {
-    if (this.isEmpty()) return;
-
     let trav = head;
     while (trav) {
       const next = trav.next;
       trav.next = trav.prev = trav.data = null;
       trav = next;
+      length--;
     }
 
-    length = 0;
     head = tail = null;
   };
 
@@ -239,13 +238,6 @@ export function DoublyLinkedList(comparator = compare()) {
    * @returns {boolean} true if the node with that value is removed, false if there's no node with that value
    */
   this.removeValue = value => {
-    if (this.isEmpty()) return false;
-
-    if (head.compareTo(value) === 0) {
-      this.removeFirst();
-      return true;
-    }
-
     for (let trav = head; trav; trav = trav.next)
       if (trav.compareTo(value) === 0) {
         this.removeNode(trav);
@@ -261,8 +253,6 @@ export function DoublyLinkedList(comparator = compare()) {
    * @returns {boolean} true if nodes with that value are removed, false if there's no node with that value
    */
   this.removeAllValue = value => {
-    if (this.isEmpty()) return false;
-
     let found = false;
     for (let trav = head; trav; trav = trav.next)
       if (trav.compareTo(value) === 0) {
@@ -282,8 +272,7 @@ export function DoublyLinkedList(comparator = compare()) {
    * @returns {number} the node's index, or -1 if it doesn't exist
    */
   this.indexOf = value => {
-    let trav = head;
-    for (let i = 0; trav, i < length; trav = trav.next, i++)
+    for (let trav = head, i = 0; trav, i < length; trav = trav.next, i++)
       if (trav.compareTo(value) === 0) return i;
     return -1;
   };
@@ -299,7 +288,11 @@ export function DoublyLinkedList(comparator = compare()) {
    * Define a iterator for the list so that we can use it as an iterator. For each iteration, the iterator returns a node.
    */
   this[Symbol.iterator] = function* () {
-    for (let trav = head; trav; trav = trav.next) yield trav.data;
+    const expectedSize = length;
+    for (let trav = head; trav; trav = trav.next) {
+      if (expectedSize !== length) throw new Error('Concurrent Modification');
+      yield trav.data;
+    }
   };
 
   /**
