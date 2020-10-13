@@ -222,6 +222,14 @@ const linkedListTest = (List, listName) => {
         expect(result).toBeTruthy();
         expect(list.size()).toBe(2);
         expect(list.toString()).toBe('5 10');
+
+        result = list.removeValue(10);
+        expect(result).toBeTruthy();
+        expect(list.size()).toBe(1);
+        expect(list.toString()).toBe('5');
+
+        expect(list.removeLast()).toBe(5);
+        expect(list.size()).toBe(0);
       });
 
       test('Peaking first/last should return the appropriate value', () => {
@@ -263,7 +271,7 @@ const linkedListTest = (List, listName) => {
 
       test('Add/remove any items from the list while iterating through it will throw error', () => {
         expect(() => {
-          for (let value of list) list.removeValue(value);
+          for (let value of list) list.removeAt(4);
         }).toThrow('Concurrent Modification');
       })
     });
@@ -271,4 +279,4 @@ const linkedListTest = (List, listName) => {
 };
 
 linkedListTest(DoublyLinkedList, 'DoublyLinkedList');
-// linkedListTest(SinglyLinkedList, 'SinglyLinkedList');
+linkedListTest(SinglyLinkedList, 'SinglyLinkedList');

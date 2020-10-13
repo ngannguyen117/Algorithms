@@ -359,17 +359,14 @@ export function SinglyLinkedList(comparator = compare()) {
    * Clear the list by removing all nodes's pointers. O(n)
    */
   this.clear = () => {
-    if (this.isEmpty()) return;
-
     let trav = head;
     while (trav) {
       const next = trav.next;
       trav.next = trav.data = null;
       trav = next;
+      length--;
     }
-
     head = tail = null;
-    length = 0;
   };
 
   /**
@@ -378,10 +375,7 @@ export function SinglyLinkedList(comparator = compare()) {
    */
   this.addFirst = data => {
     if (this.isEmpty()) head = tail = new Node(data);
-    else {
-      const node = new Node(data, head);
-      head = node;
-    }
+    else head = new Node(data, head);
 
     length++;
   };
@@ -419,11 +413,9 @@ export function SinglyLinkedList(comparator = compare()) {
     validateIndex(index);
 
     let trav = head;
-    for (let i = 0; i < index - 1; i++) trav = trav.next; // trav pos will be at index - 1
-
-    const node = new Node(data, trav.next);
-    trav.next = node;
-
+    for (let i = 0; i < index - 1; i++) trav = trav.next;
+    trav.next = new Node(data, trav.next);
+    
     length++;
   };
 
@@ -434,38 +426,14 @@ export function SinglyLinkedList(comparator = compare()) {
   this.removeFirst = () => {
     if (this.isEmpty()) return;
 
-    const prevHead = head;
-    const data = prevHead.data;
+    const data = head.data;
+    let prevHead = head;
     head = head.next;
-    prevHead.next = null;
-
+    prevHead = prevHead.next = null;
     length--;
-    if (this.isEmpty()) tail = null;
 
+    if (length === 0) tail = null;
     return data;
-  };
-
-  /**
-   * Remove the next node from the list from this specific node. O(n)
-   * @param {Node} node node before the node to be removed
-   * @returns {Node} the same node with the required next node already removed
-   */
-  const removeNextNode = node => {
-    const next = node.next;
-    [node.next, next.next] = [next.next, null];
-    length--;
-
-    return node;
-  };
-
-  /**
-   * Get the node at index - 1
-   * @param {number} index the index of the node where we want to get the previous node from
-   */
-  const getPrevNode = index => {
-    let trav = head;
-    for (let i = 0; i < index - 1; i++) trav = trav.next;
-    return trav;
   };
 
   /**
@@ -474,12 +442,16 @@ export function SinglyLinkedList(comparator = compare()) {
    */
   this.removeLast = () => {
     if (this.isEmpty()) return;
-    if (length === 1) return this.removeFirst();
 
-    let prevNode = getPrevNode(length - 1);
-    prevNode = removeNextNode(prevNode);
+    let trav = head;
+    for (let i = 0; i < length - 2; i++) trav = trav.next;
+
     const data = tail.data;
-    tail = prevNode;
+    tail = trav;
+    tail.next = null;
+    length--;
+
+    if (length === 0) head = null;
     return data;
   };
 
@@ -490,45 +462,19 @@ export function SinglyLinkedList(comparator = compare()) {
    */
   this.removeAt = index => {
     validateIndex(index);
-
     if (index === 0) return this.removeFirst();
     if (index === length - 1) return this.removeLast();
 
-    let prevNode = getPrevNode(index);
-    const data = prevNode.next.data;
-    removeNextNode(prevNode);
-
-    return data;
-  };
-
-  /**
-   * Remove node(s) with the specified value, if exists
-   * @param {string | number} value
-   * @param {boolean} single whether to delete only a single first value or not
-   */
-  const removeValueHelper = (value, single = false) => {
-    if (this.isEmpty() || (length === 1 && head.compareTo(value) !== 0))
-      return false;
-
-    let found = false;
-    if (head.compareTo(value) === 0) {
-      this.removeFirst();
-      if (single) return true;
-      found = true;
-    }
-
     let trav = head;
-    while (trav && trav.next) {
-      if (trav.next.compareTo(value) === 0) {
-        const node = removeNextNode(trav);
-        if (!node.next) tail = node;
-        found = true;
-        if (single) break;
-      }
-      trav = trav.next;
-    }
+    for (let i = 0; i < index - 1; i++) trav = trav.next;
 
-    return found;
+    let node = trav.next;
+    const data = node.data;
+    trav.next = node.next;
+    node = node.next = null;
+
+    length--;
+    return data;
   };
 
   /**
@@ -536,14 +482,54 @@ export function SinglyLinkedList(comparator = compare()) {
    * @param {string | number} value value of a node to be removed
    * @returns {boolean} true if the node with that value is removed, false if there's no node with that value
    */
-  this.removeValue = value => removeValueHelper(value, true);
+  this.removeValue = value => {
+    if (head && head.compareTo(value) === 0) {
+      this.removeFirst();
+      return true;
+    }
+
+    for (let trav = head; trav && trav.next; trav = trav.next)
+      if (trav.next.compareTo(value) === 0) {
+        let node = trav.next;
+        trav.next = node.next;
+
+        if (node.next) node = node.next = null;
+        else tail = trav;
+
+        length--;
+        return true;
+      }
+
+    return false;
+  };
 
   /**
    * Remove the all nodes with the specified value. O(n)
    * @param {string | number} value value of a node to be removed
    * @returns {boolean} true if nodes with that value are removed, false if there's no node with that value
    */
-  this.removeAllValue = value => removeValueHelper(value);
+  this.removeAllValue = value => {
+    let found = false;
+
+    for (let trav = head; trav && trav.next; trav = trav.next)
+      if (trav.next.compareTo(value) === 0) {
+        let node = trav.next;
+        trav.next = node.next;
+
+        if (node.next) node = node.next = null;
+        else tail = trav;
+
+        length--;
+        found = true;
+      }
+    
+    if (head && head.compareTo(value) === 0) {
+      this.removeFirst();
+      found = true;
+    }
+
+    return found;
+  };
 
   /**
    * Find the first index of the node with the specified value. O(n)
@@ -551,8 +537,7 @@ export function SinglyLinkedList(comparator = compare()) {
    * @returns {number} the node's index, or -1 if it doesn't exist
    */
   this.indexOf = value => {
-    let trav = head;
-    for (let i = 0; trav, i < length; trav = trav.next, i++)
+    for (let trav = head, i = 0; trav; trav = trav.next, i++)
       if (trav.compareTo(value) === 0) return i;
     return -1;
   };
@@ -568,7 +553,11 @@ export function SinglyLinkedList(comparator = compare()) {
    * Define a iterator for the list so that we can use it as an iterator. For each iteration, the iterator returns a node.
    */
   this[Symbol.iterator] = function* () {
-    for (let trav = head; trav; trav = trav.next) yield trav.data;
+    const expectedSize = length;
+    for (let trav = head; trav; trav = trav.next) {
+      if (expectedSize !== length) throw new Error('Concurrent Modification');
+      yield trav.data;
+    }
   };
 
   this.toString = () => {
