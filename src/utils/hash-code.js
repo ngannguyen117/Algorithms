@@ -33,3 +33,16 @@ export const hashCode = (str, seed = 0) => {
 
   return 4294967296 * (2097151 & h2) + (h1 >>> 0);
 };
+
+/**
+ * A simpler string hash function
+ * @param {string} str a string value to be hashed
+ */
+export const hashCode2 = str => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0; // convert to 32 bit integer
+  }
+  return hash;
+};
