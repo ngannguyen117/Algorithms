@@ -2,6 +2,7 @@ import {
   HashTableSeparateChaining,
   HashTableLinearProbing,
   HashTableQuadraticProbing,
+  HashTableDoubleHashing,
 } from '../hashtable';
 
 const testHashTable = (HashTable, subtitle) => {
@@ -172,3 +173,4 @@ const testHashTable = (HashTable, subtitle) => {
 testHashTable(HashTableSeparateChaining, 'Separate Chaining');
 testHashTable(HashTableLinearProbing, 'Open Addressing - Linear Probing');
 testHashTable(HashTableQuadraticProbing, 'Open Addressing - Quadratic Probing');
+testHashTable(HashTableDoubleHashing, 'Open Addressing - Double Hashing');

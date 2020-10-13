@@ -31,7 +31,9 @@
  */
 
 import { SinglyLinkedList } from './linkedList';
-import { hashCode } from '../utils/hash-code';
+import { hashCode, hashCode2 } from '../utils/hash-code';
+import { isPrime } from '../utils/is-prime';
+import { highestOneBit } from '../utils/highest-one-bit';
 
 function Entry(key, value) {
   this.key = key;
@@ -44,6 +46,8 @@ const gcd = (a, b) => {
   if (b === 0) return a;
   return gcd(b, a % b);
 };
+
+const normalizeIndex = (hash, capacity) => (hash & 0x7fffffff) % capacity;
 
 const DEFAULT_CAPACITY = 7;
 const DEFAULT_LOAD_FACTOR = 0.65;
@@ -108,10 +112,6 @@ class HashTableOpenAddressing {
     return key == null || key === '';
   }
 
-  #normalizeIndex(hash) {
-    return (hash & 0x7fffffff) % this.#capacity;
-  }
-
   #resizeTable() {
     this.#capacity = this.#increaseCapacity(this.#capacity);
     this.#capacity = this.#adjustCapacity(this.#capacity);
@@ -152,8 +152,8 @@ class HashTableOpenAddressing {
   hasKey(key) {
     if (this.#isInvalidKey(key)) return false;
 
-    this.#setupProbing(key);
-    const offset = this.#normalizeIndex(hashCode(key));
+    this.#setupProbing(key, this.#capacity);
+    const offset = normalizeIndex(hashCode(key), this.#capacity);
 
     let j = -1; // to track the index of the first tombstone occurence
     let x = 1;
@@ -175,7 +175,7 @@ class HashTableOpenAddressing {
         return true;
       }
 
-      i = this.#normalizeIndex(offset + this.#probe(x++));
+      i = normalizeIndex(offset + this.#probe(x++), this.#capacity);
     }
   }
 
@@ -186,8 +186,8 @@ class HashTableOpenAddressing {
   get(key) {
     if (this.#isInvalidKey(key)) return null;
 
-    this.#setupProbing(key);
-    const offset = this.#normalizeIndex(hashCode(key));
+    this.#setupProbing(key, this.#capacity);
+    const offset = normalizeIndex(hashCode(key), this.#capacity);
 
     let j = -1; // to track the index of the first tombstone occurence
     let x = 1;
@@ -206,7 +206,7 @@ class HashTableOpenAddressing {
         return this.#table[j].value;
       }
 
-      i = this.#normalizeIndex(offset + this.#probe(x++));
+      i = normalizeIndex(offset + this.#probe(x++), this.#capacity);
     }
   }
 
@@ -214,8 +214,8 @@ class HashTableOpenAddressing {
     if (this.#isInvalidKey(key)) throw new Error('Invalid Key');
     if (this.#usedSlots >= this.#threshold) this.#resizeTable();
 
-    this.#setupProbing(key);
-    const offset = this.#normalizeIndex(hashCode(key));
+    this.#setupProbing(key, this.#capacity);
+    const offset = normalizeIndex(hashCode(key), this.#capacity);
 
     let j = -1; // to track the index of the first tombstone occurence
     let x = 1;
@@ -254,7 +254,7 @@ class HashTableOpenAddressing {
         return oldValue;
       }
 
-      i = this.#normalizeIndex(offset + this.#probe(x++));
+      i = normalizeIndex(offset + this.#probe(x++), this.#capacity);
     }
   }
 
@@ -269,8 +269,8 @@ class HashTableOpenAddressing {
   remove(key) {
     if (this.#isInvalidKey(key)) return null;
 
-    this.#setupProbing(key);
-    const offset = this.#normalizeIndex(hashCode(key));
+    this.#setupProbing(key, this.#capacity);
+    const offset = normalizeIndex(hashCode(key), this.#capacity);
 
     let x = 1;
     let i = offset;
@@ -285,7 +285,7 @@ class HashTableOpenAddressing {
         return value;
       }
 
-      i = this.#normalizeIndex(offset + this.#probe(x++));
+      i = normalizeIndex(offset + this.#probe(x++), this.#capacity);
     }
   }
 
@@ -356,21 +356,42 @@ export class HashTableLinearProbing extends HashTableOpenAddressing {
  */
 export class HashTableQuadraticProbing extends HashTableOpenAddressing {
   constructor(cap, loadFactor) {
-    const highestOneBit = i => {
-      i |= i >> 1;
-      i |= i >> 2;
-      i |= i >> 4;
-      i |= i >> 8;
-      i |= i >> 16;
-      return i - (i >>> 1);
-    };
-
     const probe = x => (x * x + x) >> 1;
     const setProbe = () => {};
     const incCap = capacity => 1 << (32 - Math.clz32(capacity));
     const adjCap = capacity => {
       const pow2 = highestOneBit(capacity);
       return capacity === pow2 ? capacity : incCap(capacity);
+    };
+
+    super(adjCap, setProbe, probe, incCap, cap, loadFactor);
+  }
+}
+
+/**
+ * An implementation of Hash Table using Open Addressing with Double Hashing as collision resolution method.
+ *
+ * @class HashTableDoubleHashing
+ * @extends {HashTableOpenAddressing}
+ */
+export class HashTableDoubleHashing extends HashTableOpenAddressing {
+  #hash;
+
+  constructor(cap, loadFactor) {
+    const probe = function (x) {
+      return this.#hash * x;
+    };
+
+    const setProbe = function (key, capacity) {
+      this.#hash = normalizeIndex(hashCode2(key), capacity);
+      if (this.#hash === 0) this.#hash = 1;
+    };
+
+    const incCap = capacity => 2 * capacity + 1;
+
+    const adjCap = capacity => {
+      while (!isPrime(capacity)) capacity++;
+      return capacity;
     };
 
     super(adjCap, setProbe, probe, incCap, cap, loadFactor);
