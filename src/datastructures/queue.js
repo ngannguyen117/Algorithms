@@ -30,10 +30,11 @@ import { SinglyLinkedList } from './linkedList';
  */
 export function Queue(firstElement = null) {
   const list = new SinglyLinkedList();
+  if (firstElement) list.addLast(firstElement);
 
-  this.size = () => list.size();
-  this.isEmpty = () => list.size() === 0;
-  this.clear = () => list.clear();
+  this.size = list.size;
+  this.isEmpty = list.isEmpty;
+  this.clear = list.clear;
 
   /**
    * Get the element at the front of the queue without modifying the queue. O(1)
@@ -48,7 +49,7 @@ export function Queue(firstElement = null) {
    * Adding element to the end of the queue (polling). O(1)
    * @param {string | number} value
    */
-  this.enqueue = value => list.addLast(value);
+  this.enqueue = list.addLast;
 
   /**
    * Remove the front element of the queue and return its value. O(1)
@@ -59,13 +60,7 @@ export function Queue(firstElement = null) {
     return list.removeFirst();
   };
 
-  if (firstElement) this.enqueue(firstElement);
-
   this[Symbol.iterator] = list[Symbol.iterator];
 
-  this.toString = () => {
-    const values = [];
-    for (let data of this) values.push(data);
-    return values.join(' ');
-  };
+  this.toString = list.toString;
 }
