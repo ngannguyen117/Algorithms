@@ -365,7 +365,7 @@ export class HashTableQuadraticProbing extends HashTableOpenAddressing {
       return i - (i >>> 1);
     };
 
-    const probe = x => LINEAR_CONSTANT * x;
+    const probe = x => (x * x + x) >> 1;
     const setProbe = () => {};
     const incCap = capacity => 1 << (32 - Math.clz32(capacity));
     const adjCap = capacity => {
