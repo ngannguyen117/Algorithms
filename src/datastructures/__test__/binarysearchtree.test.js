@@ -8,7 +8,7 @@ const compare = (a, b) => {
   return a.name < b.name ? -1 : 1;
 };
 
-const toString = function (order = TreeTraversalOrder.IN_ORDER) {
+const toString = function (order = TreeTraversalOrder.LEVEL_ORDER) {
   const values = [];
   for (let obj of this[Symbol.iterator](order))
     values.push(`${obj.name}${obj.age}`);
@@ -81,21 +81,15 @@ describe('Test Binary Search Tree', () => {
     });
 
     test('traverse call with a value from TreeTraversalOrder will return an iterator that its next().done is true', () => {
-      let iter = bst.traverse(TreeTraversalOrder.PRE_ORDER);
-      expect(Symbol.iterator in iter).toBeTruthy();
-      expect(iter.next().done).toBeTruthy();
-
-      iter = bst.traverse(TreeTraversalOrder.IN_ORDER);
-      expect(Symbol.iterator in iter).toBeTruthy();
-      expect(iter.next().done).toBeTruthy();
-
-      iter = bst.traverse(TreeTraversalOrder.POST_ORDER);
-      expect(Symbol.iterator in iter).toBeTruthy();
-      expect(iter.next().done).toBeTruthy();
-
-      iter = bst.traverse(TreeTraversalOrder.LEVEL_ORDER);
-      expect(Symbol.iterator in iter).toBeTruthy();
-      expect(iter.next().done).toBeTruthy();
+      const traverseIter = order => {
+        let iter = bst.traverse(order);
+        expect(Symbol.iterator in iter).toBeTruthy();
+        expect(iter.next().done).toBeTruthy();
+      }
+      traverseIter(TreeTraversalOrder.PRE_ORDER);
+      traverseIter(TreeTraversalOrder.IN_ORDER);
+      traverseIter(TreeTraversalOrder.POST_ORDER);
+      traverseIter(TreeTraversalOrder.LEVEL_ORDER);
     });
 
     test('bst[Symbol.iterator] should behave the same way bst.traverse does', () => {
@@ -123,40 +117,40 @@ describe('Test Binary Search Tree', () => {
       expect(bst.contains(28)).toBeTruthy();
       expect(bst.contains(2)).toBeFalsy();
       expect(bst.height()).toBe(0);
+      expect(bst.toString(TreeTraversalOrder.IN_ORDER)).toBe('28');
       expect(bst.toString()).toBe('28');
-      expect(bst.toString(TreeTraversalOrder.LEVEL_ORDER)).toBe('28');
 
       bst.add(30);
       expect(bst.size()).toBe(2);
       expect(bst.height()).toBe(1);
+      expect(bst.toString(TreeTraversalOrder.IN_ORDER)).toBe('28 30');
       expect(bst.toString()).toBe('28 30');
-      expect(bst.toString(TreeTraversalOrder.LEVEL_ORDER)).toBe('28 30');
 
       bst.add(9);
       expect(bst.size()).toBe(3);
       expect(bst.height()).toBe(1);
-      expect(bst.toString()).toBe('9 28 30');
-      expect(bst.toString(TreeTraversalOrder.LEVEL_ORDER)).toBe('28 9 30');
+      expect(bst.toString(TreeTraversalOrder.IN_ORDER)).toBe('9 28 30');
+      expect(bst.toString()).toBe('28 9 30');
 
       bst.add(12);
       expect(bst.size()).toBe(4);
       expect(bst.height()).toBe(2);
-      expect(bst.toString()).toBe('9 12 28 30');
-      expect(bst.toString(TreeTraversalOrder.LEVEL_ORDER)).toBe('28 9 30 12');
+      expect(bst.toString(TreeTraversalOrder.IN_ORDER)).toBe('9 12 28 30');
+      expect(bst.toString()).toBe('28 9 30 12');
 
       bst.add(15);
       expect(bst.size()).toBe(5);
       expect(bst.height()).toBe(3);
-      expect(bst.toString()).toBe('9 12 15 28 30');
-      expect(bst.toString(TreeTraversalOrder.LEVEL_ORDER)).toBe(
+      expect(bst.toString(TreeTraversalOrder.IN_ORDER)).toBe('9 12 15 28 30');
+      expect(bst.toString()).toBe(
         '28 9 30 12 15'
       );
 
       bst.add(29);
       expect(bst.size()).toBe(6);
       expect(bst.height()).toBe(3);
-      expect(bst.toString()).toBe('9 12 15 28 29 30');
-      expect(bst.toString(TreeTraversalOrder.LEVEL_ORDER)).toBe(
+      expect(bst.toString(TreeTraversalOrder.IN_ORDER)).toBe('9 12 15 28 29 30');
+      expect(bst.toString()).toBe(
         '28 9 30 12 29 15'
       );
 
@@ -164,8 +158,8 @@ describe('Test Binary Search Tree', () => {
       bst.add(15);
       expect(bst.size()).toBe(6);
       expect(bst.height()).toBe(3);
-      expect(bst.toString()).toBe('9 12 15 28 29 30');
-      expect(bst.toString(TreeTraversalOrder.LEVEL_ORDER)).toBe(
+      expect(bst.toString(TreeTraversalOrder.IN_ORDER)).toBe('9 12 15 28 29 30');
+      expect(bst.toString()).toBe(
         '28 9 30 12 29 15'
       );
 
@@ -182,29 +176,29 @@ describe('Test Binary Search Tree', () => {
       expect(bst.isEmpty()).toBeFalsy();
       expect(bst.contains(obj)).toBeTruthy();
       expect(bst.height()).toBe(0);
+      expect(bst.toString(TreeTraversalOrder.IN_ORDER)).toBe('A28');
       expect(bst.toString()).toBe('A28');
-      expect(bst.toString(TreeTraversalOrder.LEVEL_ORDER)).toBe('A28');
 
       obj = { name: 'B', age: 30 };
       bst.add(obj);
       expect(bst.size()).toBe(2);
       expect(bst.height()).toBe(1);
+      expect(bst.toString(TreeTraversalOrder.IN_ORDER)).toBe('A28 B30');
       expect(bst.toString()).toBe('A28 B30');
-      expect(bst.toString(TreeTraversalOrder.LEVEL_ORDER)).toBe('A28 B30');
 
       obj = { name: 'C', age: 9 };
       bst.add(obj);
       expect(bst.size()).toBe(3);
       expect(bst.height()).toBe(1);
-      expect(bst.toString()).toBe('C9 A28 B30');
-      expect(bst.toString(TreeTraversalOrder.LEVEL_ORDER)).toBe('A28 C9 B30');
+      expect(bst.toString(TreeTraversalOrder.IN_ORDER)).toBe('C9 A28 B30');
+      expect(bst.toString()).toBe('A28 C9 B30');
 
       obj = { name: 'C', age: 12 };
       bst.add(obj);
       expect(bst.size()).toBe(4);
       expect(bst.height()).toBe(2);
-      expect(bst.toString()).toBe('C9 C12 A28 B30');
-      expect(bst.toString(TreeTraversalOrder.LEVEL_ORDER)).toBe(
+      expect(bst.toString(TreeTraversalOrder.IN_ORDER)).toBe('C9 C12 A28 B30');
+      expect(bst.toString()).toBe(
         'A28 C9 B30 C12'
       );
 
@@ -212,8 +206,8 @@ describe('Test Binary Search Tree', () => {
       bst.add(obj);
       expect(bst.size()).toBe(5);
       expect(bst.height()).toBe(3);
-      expect(bst.toString()).toBe('C9 C12 D15 A28 B30');
-      expect(bst.toString(TreeTraversalOrder.LEVEL_ORDER)).toBe(
+      expect(bst.toString(TreeTraversalOrder.IN_ORDER)).toBe('C9 C12 D15 A28 B30');
+      expect(bst.toString()).toBe(
         'A28 C9 B30 C12 D15'
       );
 
@@ -221,8 +215,8 @@ describe('Test Binary Search Tree', () => {
       bst.add(obj);
       expect(bst.size()).toBe(6);
       expect(bst.height()).toBe(3);
-      expect(bst.toString()).toBe('C9 C12 D15 A28 E29 B30');
-      expect(bst.toString(TreeTraversalOrder.LEVEL_ORDER)).toBe(
+      expect(bst.toString(TreeTraversalOrder.IN_ORDER)).toBe('C9 C12 D15 A28 E29 B30');
+      expect(bst.toString()).toBe(
         'A28 C9 B30 C12 E29 D15'
       );
 
@@ -231,8 +225,8 @@ describe('Test Binary Search Tree', () => {
       bst.add(obj);
       expect(bst.size()).toBe(6);
       expect(bst.height()).toBe(3);
-      expect(bst.toString()).toBe('C9 C12 D15 A28 E29 B30');
-      expect(bst.toString(TreeTraversalOrder.LEVEL_ORDER)).toBe(
+      expect(bst.toString(TreeTraversalOrder.IN_ORDER)).toBe('C9 C12 D15 A28 E29 B30');
+      expect(bst.toString()).toBe(
         'A28 C9 B30 C12 E29 D15'
       );
 
@@ -241,8 +235,8 @@ describe('Test Binary Search Tree', () => {
       bst.add(obj);
       expect(bst.size()).toBe(7);
       expect(bst.height()).toBe(4);
-      expect(bst.toString()).toBe('C9 C12 D15 S15 A28 E29 B30');
-      expect(bst.toString(TreeTraversalOrder.LEVEL_ORDER)).toBe(
+      expect(bst.toString(TreeTraversalOrder.IN_ORDER)).toBe('C9 C12 D15 S15 A28 E29 B30');
+      expect(bst.toString()).toBe(
         'A28 C9 B30 C12 E29 D15 S15'
       );
 
@@ -261,8 +255,8 @@ describe('Test Binary Search Tree', () => {
         bst.add(29);
         expect(bst.size()).toBe(6);
         expect(bst.height()).toBe(3);
-        expect(bst.toString()).toBe('9 12 15 28 29 30');
-        expect(bst.toString(TreeTraversalOrder.LEVEL_ORDER)).toBe(
+        expect(bst.toString(TreeTraversalOrder.IN_ORDER)).toBe('9 12 15 28 29 30');
+        expect(bst.toString()).toBe(
           '28 9 30 12 29 15'
         );
 
@@ -281,8 +275,8 @@ describe('Test Binary Search Tree', () => {
         bst.add(13);
         expect(bst.size()).toBe(8);
         expect(bst.height()).toBe(4);
-        expect(bst.toString()).toBe('7 9 12 13 15 28 29 30');
-        expect(bst.toString(TreeTraversalOrder.LEVEL_ORDER)).toBe(
+        expect(bst.toString(TreeTraversalOrder.IN_ORDER)).toBe('7 9 12 13 15 28 29 30');
+        expect(bst.toString()).toBe(
           '28 9 30 7 12 29 15 13'
         );
 
@@ -292,16 +286,16 @@ describe('Test Binary Search Tree', () => {
         expect(bst.remove(9, true)).toBeTruthy();
         expect(bst.size()).toBe(7);
         expect(bst.height()).toBe(3);
-        expect(bst.toString()).toBe('7 12 13 15 28 29 30');
-        expect(bst.toString(TreeTraversalOrder.LEVEL_ORDER)).toBe(
+        expect(bst.toString(TreeTraversalOrder.IN_ORDER)).toBe('7 12 13 15 28 29 30');
+        expect(bst.toString()).toBe(
           '28 12 30 7 15 29 13'
         );
 
         expect(bst.remove(28, false)).toBeTruthy();
         expect(bst.size()).toBe(6);
         expect(bst.height()).toBe(2);
-        expect(bst.toString()).toBe('7 12 13 15 29 30');
-        expect(bst.toString(TreeTraversalOrder.LEVEL_ORDER)).toBe(
+        expect(bst.toString(TreeTraversalOrder.IN_ORDER)).toBe('7 12 13 15 29 30');
+        expect(bst.toString()).toBe(
           '15 12 30 7 13 29'
         );
       });

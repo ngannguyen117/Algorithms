@@ -43,63 +43,68 @@ import { TreeTraversalOrder } from '../utils/tree-traversal-order';
  *
  * @param {(a, b) => -1 | 0 | 1} compareFunc a function to define how to compare the tree's data
  */
-export function BinarySearchTree(compareFunc = compare()) {
-  const comparator = compareFunc;
-  let nodeCount = 0; // number of nodes in this BST
-  let root = null; // this BST is a rooted tree so we maintain a handle on the root node
-
+export function BinarySearchTree(comparator = compare()) {
   /**
    * a private Node class that holds data, a pointer to left child and a pointer to right child
    * @param {string | number} data
-   * @param {Node} left reference to left child
-   * @param {Node} right reference to right child
    */
-  function Node(data, left = null, right = null) {
+  function Node (data) {
     this.data = data;
-    this.left = left;
-    this.right = right;
+    this.left = null;
+    this.right = null;
+
+    this.compareTo = other => {
+      let value = other;
+      if (other instanceof Node) value = other.data;
+      return comparator(this.data, value);
+    };
   }
 
-  /***************** HELPER METHODS *******************/
+  let root = null; // this BST is a rooted tree so we maintain a handle on the root node
+  let size = 0;
 
+  //------------------------------ HELPER METHODS ---------------------------------
   /**
    * Clear a subtree from the provided root node
    * @param {Node} node subtree's root
    */
-  const clear = node => {
+  const clear = (node = root) => {
     if (node) {
       node.left = clear(node.left);
       node.right = clear(node.right);
-      nodeCount--;
+      size--;
     }
-
     node = null;
     return node;
   };
 
   /**
    * A recursive method to find an elements in the tree
-   * @param {Node} node the root of a tree/subtree
    * @param {string | number} elem Element that needs to be found
+   * @param {Node} node the root of a tree/subtree
    */
-  const contains = (node, elem) => {
-    if (!node) return false; // base case: reach bottom, value not found
-    const cmp = comparator(elem, node.data);
+  const contains = (elem, node = root) => {
+    if (!node) return false;
 
-    if (cmp < 0) return contains(node.left, elem); // check out the left subtree because the elem is smaller than the current node
-    if (cmp > 0) return contains(node.right, elem); // check out the right subtree because the elem is larger than the current node
+    const cmp = node.compareTo(elem);
+    if (cmp > 0) return contains(elem, node.left);
+    if (cmp < 0) return contains(elem, node.right); 
 
     return true;
   };
 
   /**
-   * A recursive method to find the tree's height
-   * @param {Node} node a tree/subtree's root
-   * @returns {number} tree's height
+   * A recursive method to add an element to this tree
+   * @param {string | number} elem Element to be added
+   * @param {Node} node subtree's root
    */
-  const height = node => {
-    if (!node) return -1;
-    return Math.max(height(node.left), height(node.right)) + 1;
+  const add = (elem, node = root) => {
+    if (!node) return new Node(elem);
+
+    const cmp = node.compareTo(elem);
+    if (cmp > 0) node.left = add(elem, node.left);
+    else if (cmp < 0) node.right = add(elem, node.right);
+    return node;
   };
 
   /**
@@ -124,15 +129,14 @@ export function BinarySearchTree(compareFunc = compare()) {
 
   /**
    * A recursive method to remove an element from the tree
-   * @param {Node} node subtree's root
    * @param {string | number} elem Element we need to remove
+   * @param {Node} node subtree's root
    * @returns {Node} subtree's root with a new successor
    */
-  const remove = (node, elem, rightSuccessor = true) => {
-    const cmp = comparator(elem, node.data);
-    if (cmp < 0) node.left = remove(node.left, elem, rightSuccessor);
-    else if (cmp > 0) node.right = remove(node.right, elem, rightSuccessor);
-    // found the node we wish to remove
+  const remove = (elem, node, rightSuccessor) => {
+    const cmp = node.compareTo(elem);
+    if (cmp > 0) node.left = remove(elem, node.left, rightSuccessor);
+    else if (cmp < 0) node.right = remove(elem, node.right, rightSuccessor);
     else {
       // Case: there could be either a right or left subtree (or no subtree)
       if (!node.left) return node.right;
@@ -140,32 +144,17 @@ export function BinarySearchTree(compareFunc = compare()) {
 
       // Case: right and left subtrees are present. The successor of the node being removed can
       // either be the smallest node in the right subtree or the largest node in the left subtree.
-
+      let successor;
       if (rightSuccessor) {
-        // Take the smallest of the right subtree as the successor
-        const successor = findMin(node.right);
+        successor = findMin(node.right);
         node.data = successor.data;
-        node.right = remove(node.right, successor.data);
+        node.right = remove(successor.data, node.right, rightSuccessor);
       } else {
-        // If we were to take the largest of the left subtree
-        const successor = findMax(node.left);
+        successor = findMax(node.left);
         node.data = successor.data;
-        node.left = remove(node.left, successor.data, false);
+        node.left = remove(successor.data, node.left, rightSuccessor);
       }
     }
-    return node;
-  };
-
-  /**
-   * A recursive method to add an element to this tree
-   * @param {Node} node subtree's root
-   * @param {string | number} elem Element to be added
-   */
-  const add = (node, elem) => {
-    if (!node) return new Node(elem); // Base case: found a leaf node
-
-    if (comparator(elem, node.data) < 0) node.left = add(node.left, elem);
-    else node.right = add(node.right, elem);
     return node;
   };
 
@@ -174,13 +163,11 @@ export function BinarySearchTree(compareFunc = compare()) {
    * @returns {Iterator} an iterator that let us traverse the tree in pre-order
    */
   const preOrderTraversal = function* () {
-    const expectedNodeCount = nodeCount;
+    const expectedSize = size;
     const stack = new ArrayStack(root);
 
     while (root && !stack.isEmpty()) {
-      if (expectedNodeCount !== nodeCount)
-        throw new Error('Concurrent Modification');
-
+      if (expectedSize !== size) throw new Error('Concurrent Modification');
       const node = stack.pop();
       if (node.right) stack.push(node.right);
       if (node.left) stack.push(node.left);
@@ -194,23 +181,19 @@ export function BinarySearchTree(compareFunc = compare()) {
    * @returns {Iterator} an iterator that let us traverse the tree in in-order
    */
   const inOrderTraversal = function* () {
-    const expectedNodeCount = nodeCount;
+    const expectedSize = size;
     const stack = new ArrayStack(root);
     let trav = root;
 
     while (root && !stack.isEmpty()) {
-      if (expectedNodeCount !== nodeCount)
-        throw new Error('Concurrent Modification');
+      if (expectedSize !== size) throw new Error('Concurrent Modification');
 
       for (; trav && trav.left; trav = trav.left) stack.push(trav.left);
-
       const node = stack.pop();
-
       if (node.right) {
         stack.push(node.right);
         trav = node.right;
       }
-
       yield node.data;
     }
   };
@@ -220,7 +203,7 @@ export function BinarySearchTree(compareFunc = compare()) {
    * @returns {Iterator} an iterator that let us traverse the tree in post-order
    */
   const postOrderTraversal = function* () {
-    const expectedNodeCount = nodeCount;
+    const expectedSize = size;
     const stack = new ArrayStack();
     const tempStack = new ArrayStack();
     if (root) tempStack.push(root);
@@ -233,8 +216,7 @@ export function BinarySearchTree(compareFunc = compare()) {
     }
 
     while (root && !stack.isEmpty()) {
-      if (expectedNodeCount !== nodeCount)
-        throw new Error('Concurrent Modification');
+      if (expectedSize !== size) throw new Error('Concurrent Modification');
 
       yield stack.pop().data;
     }
@@ -245,60 +227,47 @@ export function BinarySearchTree(compareFunc = compare()) {
    * @returns {Iterator} an iterator that let us traverse the tree in level-order
    */
   const levelOrderTraversal = function* () {
-    const expectedNodeCount = nodeCount;
+    const expectedSize = size;
     const queue = new Queue(root);
 
     while (root && !queue.isEmpty()) {
-      if (expectedNodeCount !== nodeCount)
-        throw new Error('Concurrent Modification');
-
+      if (expectedSize !== size) throw new Error('Concurrent Modification');
       const node = queue.dequeue();
       if (node.left) queue.enqueue(node.left);
       if (node.right) queue.enqueue(node.right);
-
       yield node.data;
     }
   };
 
-  /**
-   * A recursive method to check if this tree satisfies the BST invariant
-   * @param {Node} node A subtree's root node
-   * @returns {boolean} true if it satisfies the BST invariant
-   */
-  const validateBSTInvariant = node => {
-    if (!node) return true;
-
-    let isValid = true;
-    if (node.left) isValid &&= comparator(node.left.data, node.data) < 0;
-    if (node.right) isValid &&= comparator(node.right.data, node.data) > 0;
-
-    return (
-      isValid &&
-      validateBSTInvariant(node.left) &&
-      validateBSTInvariant(node.right)
-    );
-  };
-
-  /***************** PUBLIC METHODS *******************/
+  //------------------------------ PUBLIC METHODS ---------------------------------
 
   /** Get this tree's size (number of nodes in the tree) */
-  this.size = () => nodeCount;
+  this.size = () => size;
 
   /** Check if the tree is empty */
-  this.isEmpty = () => this.size() === 0;
+  this.isEmpty = () => size === 0;
+
+  /**
+   * Clear this tree by removing all nodes and reset nodeCount
+   */
+  this.clear = () => (root = clear());
 
   /**
    * Check if an element is in the tree
    * @param {string | number} elem the element that needs to be found
    * @returns {boolean} true if it is in the tree
    */
-  this.contains = elem => contains(root, elem);
+  this.contains = elem => contains(elem);
 
   /**
-   * Get the tree's height
+   * A recursive method to find the tree's height
+   * @param {Node} node a tree/subtree's root
    * @returns {number} tree's height
    */
-  this.height = () => height(root);
+  this.height = (node = root) => {
+    if (!node) return -1;
+    return Math.max(this.height(node.left), this.height(node.right)) + 1;
+  };
 
   /**
    * Remove an element from the tree
@@ -309,10 +278,10 @@ export function BinarySearchTree(compareFunc = compare()) {
   this.remove = (elem, rightSuccessor = true) => {
     if (!this.contains(elem)) return false;
 
-    root = remove(root, elem, rightSuccessor);
-    nodeCount--;
+    root = remove(elem, root, rightSuccessor);
+    size--;
     return true;
-  };
+  }
 
   /**
    * Add a new element to the tree
@@ -321,17 +290,21 @@ export function BinarySearchTree(compareFunc = compare()) {
   this.add = elem => {
     if (this.contains(elem)) return false;
 
-    root = add(root, elem);
-    nodeCount++;
+    root = add(elem);
+    size++;
     return true;
   };
 
-  /**
-   * Clear this tree by removing all nodes and reset nodeCount
-   */
-  this.clear = () => (root = clear(root));
 
-  this.validateBSTInvariant = () => validateBSTInvariant(root);
+  this.validateBSTInvariant = (node = root) => {
+    if (!node) return true;
+
+    let isValid = true;
+    if (node.left) isValid &&= node.compareTo(node.left) > 0;
+    if (node.right) isValid &&= node.compareTo(node.right) < 0;
+
+    return isValid && this.validateBSTInvariant(node.left) && this.validateBSTInvariant(node.right);
+  };
 
   /**
    * Get an iterator to traverse the tree based on the order type the method receives.
@@ -357,7 +330,7 @@ export function BinarySearchTree(compareFunc = compare()) {
 
   this[Symbol.iterator] = this.traverse;
 
-  this.toString = (order = TreeTraversalOrder.IN_ORDER) => {
+  this.toString = (order = TreeTraversalOrder.LEVEL_ORDER) => {
     const values = [];
     for (let value of this[Symbol.iterator](order)) values.push(value);
     return values.join(' ');
