@@ -39,55 +39,37 @@ import { TreeTraversalOrder } from '../utils/tree-traversal-order';
  * A comparator is a function that takes in 2 elements and return -1 if a < b, 0 if a == b and 1 if a > b
  * @param {(a, b) => -1 | 0 | 1} compareFunc a function to define how to compare the tree's data
  */
-export function AVLTree(compareFunc = compare()) {
-  /**
-   * A private Node that holds data, pointers to 2 children, its height and a balanced factor
-   * @param {string | number} data
-   * @param {Node} left a pointer to left child
-   * @param {Node} right a pointer to right child
-   */
-  function Node(data, left = null, right = null) {
+export function AVLTree (comparator = compare()) {
+  function Node (data) {
     this.data = data;
-    this.left = left;
-    this.right = right;
+    this.left = null;
+    this.right = null;
     this.balancedFactor = 0;
     this.height = 0;
+
+    this.compareTo = other => {
+      let value = other;
+      if (other instanceof Node) value = other.data;
+      return comparator(this.data, value);
+    };
   }
 
-  const comparator = compareFunc;
   let root = null;
   let size = 0;
 
-  //-------------------- HELPER METHODS ------------------------
+  //------------------------------- HELPER METHODS ------------------------------
   /**
    * Clear a subtree from the provided root node
    * @param {Node} node subtree's root
    */
-  const clear = node => {
+  const clear = (node = root) => {
     if (node) {
       node.left = clear(node.left);
       node.right = clear(node.right);
       size--;
     }
-
     node = null;
     return node;
-  };
-
-  /**
-   * A recursive method to check if the element is in the sub tree of the provided node
-   * @param {Node} node a subtree's root
-   * @param {string | number} elem element to be checked
-   * @returns {boolean} true if the elem is in the tree
-   */
-  const contains = (node, elem) => {
-    if (!node) return false; // reach end, node not found
-
-    const cmp = comparator(elem, node.data);
-    if (cmp < 0) return contains(node.left, elem); // node must be in the left subtree
-    if (cmp > 0) return contains(node.right, elem); // node must be in the right subtree
-
-    return true;
   };
 
   /**
@@ -142,14 +124,16 @@ export function AVLTree(compareFunc = compare()) {
    */
   const balance = node => {
     switch (node.balancedFactor) {
-      case -2: // left heavy subtree
-        if (node.left.balancedFactor <= 0) return leftLeftCase(node);
-        return leftRightCase(node);
-      case 2: // right heavy subtree
-        if (node.right.balancedFactor >= 0) return rightRightCase(node);
-        return rightLeftCase(node);
+      case -2:
+        if (node.left.balancedFactor > 0)
+          return leftRightCase(node);
+        return leftLeftCase(node);
+      case 2:
+        if (node.right.balancedFactor < 0)
+          return rightLeftCase(node);
+        return rightRightCase(node);
       default:
-        return node; // -1, 0, 1 is fine
+        return node;
     }
   };
 
@@ -159,15 +143,15 @@ export function AVLTree(compareFunc = compare()) {
    * @param {string | number} elem element to be added
    * @returns {Node} the updated subtree's root node
    */
-  const add = (node, elem) => {
-    if (!node) return new Node(elem); // base case, reach the end, add the new elem as a leaf node
+  const add = (elem, node = root) => {
+    if (!node) return new Node(elem);
 
-    const cmp = comparator(elem, node.data);
-    if (cmp < 0) node.left = add(node.left, elem);
-    if (cmp > 0) node.right = add(node.right, elem);
+    const cmp = node.compareTo(elem);
+    if (cmp > 0) node.left = add(elem, node.left);
+    else if (cmp < 0) node.right = add(elem, node.right);
 
-    update(node); // update balanced factor and height
-    return balance(node); // re-balance the tree
+    update(node);
+    return balance(node);
   };
 
   /**
@@ -196,48 +180,28 @@ export function AVLTree(compareFunc = compare()) {
    * @param {string | number} elem Element we need to remove
    * @returns {Node} subtree's root with a new successor
    */
-  const remove = (node, elem) => {
-    const cmp = comparator(elem, node.data);
-    if (cmp < 0) node.left = remove(node.left, elem);
-    else if (cmp > 0) node.right = remove(node.right, elem);
+  const remove = (elem, node = root) => {
+    const cmp = node.compareTo(elem);
+    if (cmp > 0) node.left = remove(elem, node.left);
+    else if (cmp < 0) node.right = remove(elem, node.right);
     else {
       if (!node.left) return node.right;
       if (!node.right) return node.left;
 
-      // this node has 2 subtrees. Remove from the subtree with the greatest height to help with balancing
       let successor;
       if (node.left.height > node.right.height) {
         successor = findMax(node.left);
         node.data = successor.data;
-        node.left = remove(node.left, successor.data);
+        node.left = remove(successor.data, node.left);
       } else {
         successor = findMin(node.right);
         node.data = successor.data;
-        node.right = remove(node.right, successor.data);
+        node.right = remove(successor.data, node.right);
       }
     }
 
     update(node);
     return balance(node);
-  };
-
-  /**
-   * A recursive method to check if this tree satisfies the BST invariant
-   * @param {Node} node A subtree's root node
-   * @returns {boolean} true if it satisfies the BST invariant
-   */
-  const validateBSTInvariant = node => {
-    if (!node) return true;
-
-    let isValid = true;
-    if (node.left) isValid &&= comparator(node.left.data, node.data) < 0;
-    if (node.right) isValid &&= comparator(node.right.data, node.data) > 0;
-
-    return (
-      isValid &&
-      validateBSTInvariant(node.left) &&
-      validateBSTInvariant(node.right)
-    );
   };
 
   /**
@@ -324,20 +288,28 @@ export function AVLTree(compareFunc = compare()) {
     }
   };
 
-  //-------------------- PUBLIC METHODS ------------------------
+  //------------------------------- PUBLIC METHODS ------------------------------
   this.size = () => size;
   this.isEmpty = () => size === 0;
+  this.clear = () => (root = clear());
   this.printTree = () => printTree(root);
   this.height = () => (root ? root.height : -1);
-  this.clear = () => (root = clear(root));
-  this.validateBSTInvariant = () => validateBSTInvariant(root);
 
   /**
-   * Check if a particular element is in the tree
-   * @param {string | number} elem a value to be checked
+   * A recursive method to check if the element is in the sub tree of the provided node
+   * @param {Node} node a subtree's root
+   * @param {string | number} elem element to be checked
    * @returns {boolean} true if the elem is in the tree
    */
-  this.contains = elem => contains(root, elem);
+  this.contains = (elem, node = root) => {
+    if (!node) return false;
+
+    const cmp = node.compareTo(elem);
+    if (cmp > 0) return this.contains(elem, node.left);
+    if (cmp < 0) return this.contains(elem, node.right);
+
+    return true;
+  };
 
   /**
    * Add an element to the tree
@@ -346,7 +318,8 @@ export function AVLTree(compareFunc = compare()) {
    */
   this.add = elem => {
     if (this.contains(elem)) return false;
-    root = add(root, elem);
+
+    root = add(elem);
     size++;
     return true;
   };
@@ -358,9 +331,25 @@ export function AVLTree(compareFunc = compare()) {
    */
   this.remove = elem => {
     if (!this.contains(elem)) return false;
-    root = remove(root, elem);
+
+    root = remove(elem);
     size--;
     return true;
+  };
+
+  /**
+   * A recursive method to check if this tree satisfies the BST invariant
+   * @param {Node} node A subtree's root node
+   * @returns {boolean} true if it satisfies the BST invariant
+   */
+  this.validateBSTInvariant = (node = root) => {
+    if (!node) return true;
+
+    let isValid = true;
+    if (node.left) isValid &&= node.compareTo(node.left) > 0;
+    if (node.right) isValid &&= node.compareTo(node.right) < 0;
+
+    return isValid && this.validateBSTInvariant(node.left) && this.validateBSTInvariant(node.right);
   };
 
   /**
