@@ -20,8 +20,8 @@ const testPriorityQueue = (PQ, pqName, desc = false) => {
       });
 
       test('removeAt(), peak(), poll() should return null', () => {
-        expect(pq.removeAt(4)).toBeNull();
-        expect(pq.removeAt(0)).toBeNull();
+        expect(() => pq.removeAt(4)).toThrow('Index out of range');
+        expect(() => pq.removeAt(0)).toThrow('Index out of range');
 
         expect(pq.peak()).toBeNull();
         expect(pq.poll()).toBeNull();

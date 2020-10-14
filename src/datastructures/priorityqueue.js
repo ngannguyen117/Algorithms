@@ -57,11 +57,11 @@ import { compare } from '../utils/compare';
 export function BinaryHeap(comparator = compare()) {
   let data = [];
 
-  this.comparator = comparator;
   this.size = () => data.length;
   this.isEmpty = () => this.size() === 0;
   this.clear = () => (data = []); // O(1)
 
+  //----------------------------- HELPER METHODS -------------------------------
   /**
    * Check if element at index i has higher priority over element at index j. O(1)
    * It does if the comparator returns -1 or 0
@@ -69,7 +69,7 @@ export function BinaryHeap(comparator = compare()) {
    * @param {number} j index of element at position j
    * @returns {boolean} true if elems[i] has higher priority than elems[j]
    */
-  const hasPriority = (i, j) => this.comparator(data[i], data[j]) <= 0;
+  const hasPriority = (i, j) => comparator(data[i], data[j]) <= 0;
 
   /**
    * Swap 2 elements at index i and j, assuming i and j are valid. O(1)
@@ -95,7 +95,7 @@ export function BinaryHeap(comparator = compare()) {
 
     // Keeps bubbling up if we haven't reached the top or the current node
     // still has higher priority than its parent node
-    while (index > 0 && hasPriority(index, parentInd)) {
+    while (parentInd >= 0 && !hasPriority(parentInd, index)) {
       swap(index, parentInd);
       index = parentInd;
       parentInd = getParentIndex(index);
@@ -127,13 +127,13 @@ export function BinaryHeap(comparator = compare()) {
     }
   };
 
+  //----------------------------- PUBLIC METHODS -------------------------------
+
   /**
    * Remove an element at a particular index. O(log(n))
    * @param {number} index index of the element to be removed
    */
   this.removeAt = index => {
-    if (this.isEmpty()) return null;
-
     if (index < 0 || index >= this.size())
       throw new Error('Index out of range');
 
@@ -148,20 +148,20 @@ export function BinaryHeap(comparator = compare()) {
     sink(index); // try sinking
 
     // if sinking doesn't work, try swimming
-    if (this.comparator(elem, data[index]) === 0) swim(index);
+    if (comparator(elem, data[index]) === 0) swim(index);
     return removedData;
   };
-
+  
   /**
    * Remove a particular element from the heap. O(n)
    * @param {any} elem a value that might be in the heap
    * @returns {boolean} true if element found and deleted, otherwise false
    */
   this.remove = elem => {
-    if (!elem) return false;
+    if (elem == null || elem === '') return false;
 
     for (let i = 0; i < this.size(); i++)
-      if (this.comparator(elem, data[i]) === 0) {
+      if (comparator(elem, data[i]) === 0) {
         this.removeAt(i);
         return true;
       }
@@ -179,7 +179,10 @@ export function BinaryHeap(comparator = compare()) {
    * Remove the highest priority element from the heap
    * @returns top priority element
    */
-  this.poll = () => this.removeAt(0);
+  this.poll = () => {
+    if (this.isEmpty()) return null;
+    return this.removeAt(0);
+  }
 
   /**
    * Check if the heap contains the provided value. O(n)
@@ -188,7 +191,7 @@ export function BinaryHeap(comparator = compare()) {
    */
   this.contains = value => {
     for (let i = 0; i < this.size(); i++)
-      if (this.comparator(value, data[i]) === 0) return true;
+      if (comparator(value, data[i]) === 0) return true;
     return false;
   };
 
@@ -244,7 +247,7 @@ export function BinaryHeap(comparator = compare()) {
   };
 
   this[Symbol.iterator] = function* () {
-    for (let i = 0; i < this.size(); i++) yield data[i];
+    for (let value of data) yield value;
   };
 
   this.toString = () => data.join(' ');
