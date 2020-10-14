@@ -32,14 +32,14 @@
 export function UnionFind(size) {
   if (!size || size <= 0) throw new Error('Size is required, size > 0');
 
-  let numComponents = size; // number of components in this UnionFind
+  let componentCount = size; // number of components in this UnionFind
   const componentSize = []; // the size of each component
-  const parents = []; // parents[i] points to the parent of i, if parents[i] == i, then i is a root
+  const parent = []; // parent[i] points to the parent of i, if parent[i] == i, then i is a root
 
   for (let i = 0; i < size; i++) {
     // initially each component has a size of 1 and a self root
     componentSize.push(1);
-    parents.push(i);
+    parent.push(i);
   }
 
   /**
@@ -50,12 +50,12 @@ export function UnionFind(size) {
    */
   this.find = elem => {
     let root = elem;
-    while (root !== parents[root]) root = parents[root];
+    while (root !== parent[root]) root = parent[root];
 
-    // path compression: for all elements from elem to root, change their parents to be equal to root
+    // path compression: for all elements from elem to root, change their parent to be equal to root
     while (elem !== root) {
-      const next = parents[elem];
-      parents[elem] = root;
+      const next = parent[elem];
+      parent[elem] = root;
       elem = next;
     }
 
@@ -75,7 +75,7 @@ export function UnionFind(size) {
    * @param {number} elem
    * @returns {number} the number of elements in the component elem belongs to
    */
-  this.sizeOfComponent = elem => componentSize[this.find(elem)];
+  this.componentSize = elem => componentSize[this.find(elem)];
 
   /**
    * Get the number of elements that this UnionFind has
@@ -87,7 +87,7 @@ export function UnionFind(size) {
    * Get the current number of components in this UnionFind
    * @returns {number} number of components
    */
-  this.components = () => numComponents;
+  this.components = () => componentCount;
 
   /**
    * Unify the components contain elem1 and elem2
@@ -100,14 +100,14 @@ export function UnionFind(size) {
     const root1 = this.find(elem1);
     const root2 = this.find(elem2);
 
-    let parent = root1;
+    let newParent = root1;
     let child = root2;
     if (componentSize[root2] > componentSize[root1])
-      [parent, child] = [root2, root1];
+      [newParent, child] = [root2, root1];
 
-    componentSize[parent] += componentSize[child];
-    parents[child] = parent;
+    componentSize[newParent] += componentSize[child];
+    parent[child] = newParent;
 
-    numComponents--;
+    componentCount--;
   };
 }

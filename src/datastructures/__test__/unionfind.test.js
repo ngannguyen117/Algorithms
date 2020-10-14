@@ -24,7 +24,7 @@ describe('Test UnionFind', () => {
       uf = new UnionFind(5);
       expect(uf.size()).toBe(5);
       expect(uf.components()).toBe(5);
-      for (let i = 0; i < 5; i++) expect(uf.sizeOfComponent(i)).toBe(1);
+      for (let i = 0; i < 5; i++) expect(uf.componentSize(i)).toBe(1);
     });
   });
 
@@ -65,53 +65,53 @@ describe('Test UnionFind', () => {
     });
 
     test('Component size should change if there is a merge between components', () => {
-      expect(uf.sizeOfComponent(0)).toBe(1);
-      expect(uf.sizeOfComponent(1)).toBe(1);
-      expect(uf.sizeOfComponent(2)).toBe(1);
-      expect(uf.sizeOfComponent(3)).toBe(1);
-      expect(uf.sizeOfComponent(4)).toBe(1);
+      expect(uf.componentSize(0)).toBe(1);
+      expect(uf.componentSize(1)).toBe(1);
+      expect(uf.componentSize(2)).toBe(1);
+      expect(uf.componentSize(3)).toBe(1);
+      expect(uf.componentSize(4)).toBe(1);
 
       uf.union(0, 1);
-      expect(uf.sizeOfComponent(0)).toBe(2);
-      expect(uf.sizeOfComponent(1)).toBe(2);
-      expect(uf.sizeOfComponent(2)).toBe(1);
-      expect(uf.sizeOfComponent(3)).toBe(1);
-      expect(uf.sizeOfComponent(4)).toBe(1);
+      expect(uf.componentSize(0)).toBe(2);
+      expect(uf.componentSize(1)).toBe(2);
+      expect(uf.componentSize(2)).toBe(1);
+      expect(uf.componentSize(3)).toBe(1);
+      expect(uf.componentSize(4)).toBe(1);
 
       uf.union(1, 2);
-      expect(uf.sizeOfComponent(0)).toBe(3);
-      expect(uf.sizeOfComponent(1)).toBe(3);
-      expect(uf.sizeOfComponent(2)).toBe(3);
-      expect(uf.sizeOfComponent(3)).toBe(1);
-      expect(uf.sizeOfComponent(4)).toBe(1);
+      expect(uf.componentSize(0)).toBe(3);
+      expect(uf.componentSize(1)).toBe(3);
+      expect(uf.componentSize(2)).toBe(3);
+      expect(uf.componentSize(3)).toBe(1);
+      expect(uf.componentSize(4)).toBe(1);
 
       uf.union(0, 2);
-      expect(uf.sizeOfComponent(0)).toBe(3);
-      expect(uf.sizeOfComponent(1)).toBe(3);
-      expect(uf.sizeOfComponent(2)).toBe(3);
-      expect(uf.sizeOfComponent(3)).toBe(1);
-      expect(uf.sizeOfComponent(4)).toBe(1);
+      expect(uf.componentSize(0)).toBe(3);
+      expect(uf.componentSize(1)).toBe(3);
+      expect(uf.componentSize(2)).toBe(3);
+      expect(uf.componentSize(3)).toBe(1);
+      expect(uf.componentSize(4)).toBe(1);
 
       uf.union(3, 4);
-      expect(uf.sizeOfComponent(0)).toBe(3);
-      expect(uf.sizeOfComponent(1)).toBe(3);
-      expect(uf.sizeOfComponent(2)).toBe(3);
-      expect(uf.sizeOfComponent(3)).toBe(2);
-      expect(uf.sizeOfComponent(4)).toBe(2);
+      expect(uf.componentSize(0)).toBe(3);
+      expect(uf.componentSize(1)).toBe(3);
+      expect(uf.componentSize(2)).toBe(3);
+      expect(uf.componentSize(3)).toBe(2);
+      expect(uf.componentSize(4)).toBe(2);
 
       uf.union(1, 3);
-      expect(uf.sizeOfComponent(0)).toBe(5);
-      expect(uf.sizeOfComponent(1)).toBe(5);
-      expect(uf.sizeOfComponent(2)).toBe(5);
-      expect(uf.sizeOfComponent(3)).toBe(5);
-      expect(uf.sizeOfComponent(4)).toBe(5);
+      expect(uf.componentSize(0)).toBe(5);
+      expect(uf.componentSize(1)).toBe(5);
+      expect(uf.componentSize(2)).toBe(5);
+      expect(uf.componentSize(3)).toBe(5);
+      expect(uf.componentSize(4)).toBe(5);
 
       uf.union(4, 0);
-      expect(uf.sizeOfComponent(0)).toBe(5);
-      expect(uf.sizeOfComponent(1)).toBe(5);
-      expect(uf.sizeOfComponent(2)).toBe(5);
-      expect(uf.sizeOfComponent(3)).toBe(5);
-      expect(uf.sizeOfComponent(4)).toBe(5);
+      expect(uf.componentSize(0)).toBe(5);
+      expect(uf.componentSize(1)).toBe(5);
+      expect(uf.componentSize(2)).toBe(5);
+      expect(uf.componentSize(3)).toBe(5);
+      expect(uf.componentSize(4)).toBe(5);
     });
 
     test('After each union call, the appropriate elements should be connected to each other', () => {
