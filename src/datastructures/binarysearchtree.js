@@ -79,21 +79,6 @@ export function BinarySearchTree(comparator = compare()) {
   };
 
   /**
-   * A recursive method to find an elements in the tree
-   * @param {string | number} elem Element that needs to be found
-   * @param {Node} node the root of a tree/subtree
-   */
-  const contains = (elem, node = root) => {
-    if (!node) return false;
-
-    const cmp = node.compareTo(elem);
-    if (cmp > 0) return contains(elem, node.left);
-    if (cmp < 0) return contains(elem, node.right); 
-
-    return true;
-  };
-
-  /**
    * A recursive method to add an element to this tree
    * @param {string | number} elem Element to be added
    * @param {Node} node subtree's root
@@ -253,11 +238,20 @@ export function BinarySearchTree(comparator = compare()) {
   this.clear = () => (root = clear());
 
   /**
-   * Check if an element is in the tree
-   * @param {string | number} elem the element that needs to be found
+   * A recursive method to find an elements in the tree
+   * @param {string | number} elem Element that needs to be found
+   * @param {Node} node the root of a tree/subtree
    * @returns {boolean} true if it is in the tree
    */
-  this.contains = elem => contains(elem);
+  this.contains = (elem, node = root) => {
+    if (!node) return false;
+
+    const cmp = node.compareTo(elem);
+    if (cmp > 0) return this.contains(elem, node.left);
+    if (cmp < 0) return this.contains(elem, node.right); 
+
+    return true;
+  };
 
   /**
    * A recursive method to find the tree's height
