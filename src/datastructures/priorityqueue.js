@@ -179,10 +179,7 @@ export function BinaryHeap(comparator = compare()) {
    * Remove the highest priority element from the heap
    * @returns top priority element
    */
-  this.poll = () => {
-    if (this.isEmpty()) return null;
-    return this.removeAt(0);
-  }
+  this.poll = () => (this.isEmpty() ? null : this.removeAt(0));
 
   /**
    * Check if the heap contains the provided value. O(n)
@@ -200,7 +197,7 @@ export function BinaryHeap(comparator = compare()) {
    * @param {any} value new value to be added to the heap
    */
   this.add = value => {
-    if (!value) throw new Error('Parameter Missing or Invalid');
+    if (value == null || value === '') throw new Error('Parameter Missing or Invalid');
     data.push(value);
     swim(data.length - 1);
   };
