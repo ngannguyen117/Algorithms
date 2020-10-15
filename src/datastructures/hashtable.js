@@ -205,7 +205,7 @@ function HashTableOpenAddressing (cap, loadFactor, scheme) {
     }
 
     return null;
-  }
+  };
 
   this.insert = (key, value) => {
     if (isInvalidKey(key)) throw new Error('Invalid Key');
@@ -252,12 +252,13 @@ function HashTableOpenAddressing (cap, loadFactor, scheme) {
     const keys = [];
     for (let entry of arr) if (entry) keys.push(entry.key);
     return keys;
-  }
+  };
+
   this.values = () => {
     const values = [];
     for (let entry of arr) if (entry) values.push(entry.value);
     return values;
-  }
+  };
 
   this[Symbol.iterator] = function* () {
     const changeCount = modificationCount;
@@ -266,7 +267,8 @@ function HashTableOpenAddressing (cap, loadFactor, scheme) {
         if (changeCount !== modificationCount) throw new Error('Concurrent Modification');
         yield entry.data;
       }
-  }
+  };
+
   this.toString = () => {
     let str = '{';
     let count = 0;
@@ -274,7 +276,7 @@ function HashTableOpenAddressing (cap, loadFactor, scheme) {
       if (entry)
         str = str.concat(`${entry.toString()}${++count < size ? ', ' : ''}`);
     return str.concat('}');
-  }
+  };
 }
 
 export function HashTableLinearProbing (cap, loadFactor) {
