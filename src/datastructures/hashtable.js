@@ -33,370 +33,262 @@
 import { SinglyLinkedList } from './linkedList';
 import { hashCode, hashCode2 } from '../utils/hash-code';
 import { isPrime } from '../utils/is-prime';
-import { highestOneBit } from '../utils/highest-one-bit';
 
-function Entry(key, value) {
+function Entry (key, value) {
   this.key = key;
   this.value = value;
   this.hash = hashCode(key);
   this.toString = () => `${this.key}: ${this.value}`;
 }
 
+const DEFAULT_CAPACITY = 7;
+const DEFAULT_LOAD_FACTOR = 0.65;
+const TOMSTONE = 'TOMBSTONE';
+
 const gcd = (a, b) => {
   if (b === 0) return a;
   return gcd(b, a % b);
 };
 
-const normalizeIndex = (hash, capacity) => (hash & 0x7fffffff) % capacity;
-
-const DEFAULT_CAPACITY = 7;
-const DEFAULT_LOAD_FACTOR = 0.65;
-const TOMSTONE = 'TOMSTONE';
-const LINEAR_CONSTANT = 17; // Used in linear probing, can be any number. The table capacity will be adjusted so that gcd(capacity, LINEAR_CONSTANT) = 1
+const OpenAddressingScheme = Object.freeze({
+  LINEAR_PROBING: 1,
+  QUADRATIC_PROBING: 2,
+  DOUBLE_HASHING: 3,
+});
 
 /**
- * Abstract class for Hash Tables using Open Addressing as hash collision resolution
- * @class HashTableOpenAddressing
+ * Initialize specified methods for different probing scheme to work with Open Addressing colision resolution
+ * 
+ * In quadratic probing, we use the following probing function H(k, x) = hashCode(k) + f(x) mod 2^n. (f(x) = (x^2 + x) / 2)
+ *
+ * This probing function guarantees to find an empty cell (It generates all numbers in range [0, 2^n)
+ * without repetition for the first 2^n numbers.
+ * @param {OpenAddressingScheme} scheme Type of probing function
  */
-class HashTableOpenAddressing {
-  #capacity = DEFAULT_CAPACITY;
-  #maxLoadFactor = DEFAULT_LOAD_FACTOR;
-  #table;
-  #threshold;
-  #usedSlots = 0; // number of used slots in the table (including slot marked as deleted)
-  #size = 0; // number of unique keys currently inside the table
-  #modificationCount = 0;
+const initializeScheme = scheme => {
+  let probe, adjustCapacity;
+  let setProbe = () => {};
+  let increaseCapacity = capacity => 2 * capacity + 1;
 
-  // Abstract methods that dictate how the probing is to actually occur depending on the probing function used
-  /**
-   * Adjust the table's capacity after an increase in size
-   * @param {number} capacity current table's capacity
-   * @returns {number} adjusted capacity
-   */
-  #adjustCapacity;
-  #setupProbing;
-  #probe;
-  #increaseCapacity;
-
-  constructor(
-    adjustCapacity,
-    setupProbing,
-    probe,
-    increaseCapacity,
-    capacity,
-    maxLoadFactor
-  ) {
-    if (this.constructor === HashTableOpenAddressing)
-      throw new Error('Abstract class cannot be instantiated');
-    if (capacity < 0) throw new Error('Illegal capacity');
-    if (maxLoadFactor <= 0 || maxLoadFactor > 1)
-      throw new Error('Illegal load factor');
-
-    // Initialize abstract methods
-    this.#adjustCapacity = adjustCapacity;
-    this.#setupProbing = setupProbing;
-    this.#probe = probe;
-    this.#increaseCapacity = increaseCapacity;
-
-    // Initialize private properties
-    if (capacity) this.#capacity = Math.max(this.#capacity, capacity);
-    if (maxLoadFactor) this.#maxLoadFactor = maxLoadFactor;
-
-    this.#capacity = this.#adjustCapacity(this.#capacity);
-    this.#threshold = Math.floor(this.#capacity * this.#maxLoadFactor);
-    this.#table = [...Array(this.#capacity)]; // Entry[]
+  switch (scheme) {
+    case OpenAddressingScheme.LINEAR_PROBING:
+      const LINEAR_CONSTANT = 17;
+      probe = x => LINEAR_CONSTANT * x;
+      adjustCapacity = capacity => {
+        while (gcd(LINEAR_CONSTANT, capacity) !== 1) capacity++;
+        return capacity;
+      };
+      break;
+    case OpenAddressingScheme.QUADRATIC_PROBING:
+      probe = x => x * x + x >> 1;
+      increaseCapacity = capacity => 1 << (32 - Math.clz32(capacity)); // get the next power of 2
+      adjustCapacity = capacity => {
+        const currentPowerOf2 = 1 << (31 - Math.clz32(capacity));
+        return capacity === currentPowerOf2 ? currentPowerOf2 : increaseCapacity(capacity);
+      };
+      break;
+    case OpenAddressingScheme.DOUBLE_HASHING:
+      let hash;
+      setProbe = (key, index) => {
+        hash = index(hashCode2(key));
+        if (hash === 0) hash = 1;
+      };
+      probe = x => hash * x;
+      adjustCapacity = capacity => {
+        while (!isPrime(capacity)) capacity++;
+        return capacity;
+      }
+      break;
   }
+  return { probe, setProbe, increaseCapacity, adjustCapacity };
+}
+
+/**
+ * Hash Table implementation using Open Addressing
+ * @param {number} cap initial capacity
+ * @param {number} loadFactor the max percentage of spots can be filled in the table before resizing
+ * @param {OpenAddressingScheme} scheme type of probing function
+ */
+function HashTableOpenAddressing (cap, loadFactor, scheme) {
+  // Validate capacity and loadFactor
+  if (cap < 0) throw new Error('Illegal capacity');
+  if (loadFactor <= 0 || loadFactor > 1) throw new Error('Illegal load factor');
+
+  // initialize local variables & methods
+  const { probe, setProbe, increaseCapacity, adjustCapacity } = initializeScheme(scheme);
+  const maxLoadFactor = loadFactor ? loadFactor : DEFAULT_LOAD_FACTOR;
+  let arr, size, threshold, capacity, modificationCount, usedSlots;
+  const initializeTable = () => {
+    capacity = cap ? Math.max(DEFAULT_CAPACITY, cap) : DEFAULT_CAPACITY;
+    threshold = Math.floor(capacity * maxLoadFactor);
+    arr = [...Array(capacity)];
+    size = 0;
+    usedSlots = 0;
+    modificationCount = 0;
+  };
+  initializeTable();
 
   //---------------------------- HELPER METHODS -----------------------------
-  #isInvalidKey(key) {
-    return key == null || key === '';
-  }
+  const isInvalidKey = key => key == null || key === '';
+  const index = hash => (hash & 0x7fffffff) % capacity;
 
-  #resizeTable() {
-    this.#capacity = this.#increaseCapacity(this.#capacity);
-    this.#capacity = this.#adjustCapacity(this.#capacity);
-    this.#threshold = Math.floor(this.#capacity * this.#maxLoadFactor);
+  const seekEntry = key => {
+    if (isInvalidKey(key)) return null;
+
+    setProbe(key, index);
+    const offset = index(hashCode(key));
+
+    for (let i = offset, j = -1, x = 1; arr[i]; i = index(offset + probe(x++))) {
+      if (arr[i].key === TOMSTONE)  j = j === -1 ? i : j; // record the first deleted cell index to perform lazy relocation
+      else if (arr[i].key === key) {
+        if (j === -1) return arr[i];
+
+        // Previously encounter a deleted slot. We move the entry in i to j so that
+        // if we need to find this key again, we'll find it faster. (lazy relocation)
+        arr[j] = arr[i];
+        arr[i] = new Entry(TOMSTONE);
+        return arr[j];
+      }
+    }
+
+    return null;
+  };
+
+  const resizeTable = () => {
+    capacity = increaseCapacity(capacity);
+    capacity = adjustCapacity(capacity);
+    threshold = Math.floor(capacity * maxLoadFactor);
 
     // create a new table with new capacity and switch reference with the current table
-    let oldTable = [...Array(this.#capacity)];
-    const temp = this.#table;
-    this.#table = oldTable;
-    oldTable = temp;
+    let oldArr = [...Array(capacity)];
+    const temp = arr;
+    arr = oldArr;
+    oldArr = temp;
 
     // reset size and usedSlots since we'll perform insertion on all non-empty entries again
-    this.#size = 0;
-    this.#usedSlots = 0;
+    usedSlots = 0;
+    size = 0;
 
-    for (let entry of oldTable)
+    for (let entry of oldArr)
       if (entry && entry.key !== TOMSTONE) this.insert(entry.key, entry.value);
 
-    oldTable = [];
-  }
+    oldArr = null;
+  };
 
   //---------------------------- PUBLIC METHODS -----------------------------
-  clear() {
-    this.#table = [];
-    this.#size = 0;
-    this.#usedSlots = 0;
-    this.#modificationCount++;
-  }
+  this.size = () => size;
+  this.isEmpty = () => size === 0;
+  this.clear = initializeTable;
 
-  size() {
-    return this.#size;
-  }
+  this.hasKey = key => seekEntry(key) !== null;
+  this.contains = key => this.hasKey(key);
 
-  isEmpty() {
-    return this.#size === 0;
-  }
+  this.get = key => {
+    const entry = seekEntry(key);
+    return entry ? entry.value : null;
+  };
 
-  hasKey(key) {
-    if (this.#isInvalidKey(key)) return false;
+  this.remove = key => {
+    if (isInvalidKey(key)) return null;
 
-    this.#setupProbing(key, this.#capacity);
-    const offset = normalizeIndex(hashCode(key), this.#capacity);
+    setProbe(key, index);
+    const offset = index(hashCode(key));
 
-    let j = -1; // to track the index of the first tombstone occurence
-    let x = 1;
-    let i = offset;
-    while (true) {
-      if (!this.#table[i]) return false;
-
-      if (this.#table[i].key === TOMSTONE) {
-        // record the first deleted cell index to perform lazy relocation
-        if (j === -1) j = i;
-      } else if (this.#table[i].key === key) {
-        if (j !== -1) {
-          // Previously encounter a deleted slot. We move the entry in i to j so that
-          // if we need to find this key again, we'll find it faster. (lazy relocation)
-          this.#table[j] = this.#table[i];
-          this.#table[i] = new Entry(TOMSTONE);
-        }
-
-        return true;
+    for (let i = offset, x = 1; arr[i]; i = index(offset + probe(x++))) {
+      if (arr[i].key === key) {
+        const value = arr[i].value;
+        arr[i] = new Entry(TOMSTONE);
+        size--;
+        modificationCount++;
+        return value;
       }
-
-      i = normalizeIndex(offset + this.#probe(x++), this.#capacity);
     }
+
+    return null;
   }
 
-  contains(key) {
-    return this.hasKey(key);
-  }
+  this.insert = (key, value) => {
+    if (isInvalidKey(key)) throw new Error('Invalid Key');
+    if (usedSlots >= threshold) resizeTable();
 
-  get(key) {
-    if (this.#isInvalidKey(key)) return null;
+    setProbe(key, index);
+    const offset = index(hashCode(key));
 
-    this.#setupProbing(key, this.#capacity);
-    const offset = normalizeIndex(hashCode(key), this.#capacity);
-
-    let j = -1; // to track the index of the first tombstone occurence
-    let x = 1;
-    let i = offset;
-    while (true) {
-      if (!this.#table[i]) return null;
-
-      if (this.#table[i].key === TOMSTONE) {
-        // record the first deleted cell index to perform lazy relocation
-        if (j === -1) j = i;
-      } else if (this.#table[i].key === key) {
-        if (j === -1) return this.#table[i].value;
-
-        this.#table[j] = this.#table[i];
-        this.#table[i] = new Entry(TOMSTONE);
-        return this.#table[j].value;
-      }
-
-      i = normalizeIndex(offset + this.#probe(x++), this.#capacity);
-    }
-  }
-
-  insert(key, value) {
-    if (this.#isInvalidKey(key)) throw new Error('Invalid Key');
-    if (this.#usedSlots >= this.#threshold) this.#resizeTable();
-
-    this.#setupProbing(key, this.#capacity);
-    const offset = normalizeIndex(hashCode(key), this.#capacity);
-
-    let j = -1; // to track the index of the first tombstone occurence
-    let x = 1;
-    let i = offset;
-
-    while (true) {
-      // empty slot
-      if (!this.#table[i]) {
-        // No tombstone found before index i
+    for (let i = offset, x = 1, j = -1; ; i = index(offset + probe(x++))) {
+      // found an empty spot, insert new entry
+      if (!arr[i]) {
         if (j === -1) {
-          this.#usedSlots++;
-          this.#size++;
-          this.#table[i] = new Entry(key, value);
-        } else {
-          this.#size++;
-          this.#table[j] = new Entry(key, value);
-        }
+          usedSlots++;
+          arr[i] = new Entry(key, value);
+        } else arr[j] = new Entry(key, value);
 
-        this.#modificationCount++;
+        size++;
+        modificationCount++;
         return null;
       }
 
       // this slot is either not empty or it is a tombstone
-      if (this.#table[i].key === TOMSTONE) {
-        if (j === -1) j = i;
-      } else if (this.#table[i].key === key) {
-        // This slot contains the same key needed to be inserted, update the entry's value
-        const oldValue = this.#table[i].value;
-        if (j === -1) this.#table[i].value = value;
-        else {
-          this.#table[i] = this.#table[j];
-          this.#table[j] = new Entry(key, value);
+      if (arr[i].key === TOMSTONE) j = j === -1 ? i : j;
+      else if (arr[i].key === key) {
+        const oldValue = arr[i].value;
+
+        arr[i].value = value;
+        if (j !== -1) {
+          const temp = arr[j];
+          arr[j] = arr[i];
+          arr[i] = temp;
         }
 
-        this.#modificationCount++;
+        modificationCount++;
         return oldValue;
       }
-
-      i = normalizeIndex(offset + this.#probe(x++), this.#capacity);
     }
-  }
+  };
 
-  put(key, value) {
-    return this.insert(key, value);
-  }
+  this.add = (key, value) => this.insert(key, value);
+  this.put = (key, value) => this.insert(key, value);
 
-  add(key, value) {
-    return this.insert(key, value);
-  }
-
-  remove(key) {
-    if (this.#isInvalidKey(key)) return null;
-
-    this.#setupProbing(key, this.#capacity);
-    const offset = normalizeIndex(hashCode(key), this.#capacity);
-
-    let x = 1;
-    let i = offset;
-
-    while (true) {
-      if (!this.#table[i]) return null;
-      if (this.#table[i].key === key) {
-        this.#size--;
-        this.#modificationCount++;
-        const value = this.#table[i].value;
-        this.#table[i] = new Entry(TOMSTONE);
-        return value;
-      }
-
-      i = normalizeIndex(offset + this.#probe(x++), this.#capacity);
-    }
-  }
-
-  keys() {
+  this.keys = () => {
     const keys = [];
-    for (let entry of this.#table)
-      if (entry && entry.key !== TOMSTONE) keys.push(entry.key);
+    for (let entry of arr) if (entry) keys.push(entry.key);
     return keys;
   }
-
-  values() {
+  this.values = () => {
     const values = [];
-    for (let entry of this.#table)
-      if (entry && entry.key !== TOMSTONE) values.push(entry.value);
+    for (let entry of arr) if (entry) values.push(entry.value);
     return values;
   }
 
-  *[Symbol.iterator]() {
-    const modificationCount = this.#modificationCount;
-    for (let entry of this.#table) {
-      if (modificationCount !== this.#modificationCount)
-        throw new Error('Concurrent Modification');
-      if (entry && entry.key !== TOMSTONE) yield entry.key;
-    }
+  this[Symbol.iterator] = function* () {
+    const changeCount = modificationCount;
+    for (let entry of arr)
+      if (entry) {
+        if (changeCount !== modificationCount) throw new Error('Concurrent Modification');
+        yield entry.data;
+      }
   }
-
-  toString() {
+  this.toString = () => {
     let str = '{';
     let count = 0;
-    for (let entry of this.#table)
-      if (entry && entry.key !== TOMSTONE)
-        str = str.concat(
-          `${entry.toString()}${++count < this.#size ? ', ' : ''}`
-        );
+    for (let entry of arr)
+      if (entry)
+        str = str.concat(`${entry.toString()}${++count < size ? ', ' : ''}`);
     return str.concat('}');
   }
 }
 
-/**
- * An implementation of Hash Table using Open Addressing with Linear probing as collision resolution method
- * @class HashTableLinearProbing
- * @extends {HashTableOpenAddressing}
- */
-export class HashTableLinearProbing extends HashTableOpenAddressing {
-  constructor(cap, loadFactor) {
-    const probe = x => LINEAR_CONSTANT * x;
-    const setProbe = () => {};
-    const incCap = capacity => 2 * capacity + 1;
-    const adjCap = capacity => {
-      while (gcd(LINEAR_CONSTANT, capacity) !== 1) capacity++;
-      return capacity;
-    };
-
-    super(adjCap, setProbe, probe, incCap, cap, loadFactor);
-  }
+export function HashTableLinearProbing (cap, loadFactor) {
+  HashTableOpenAddressing.call(this, cap, loadFactor, OpenAddressingScheme.LINEAR_PROBING);
 }
 
-/**
- * An implementation of Hash Table using Open Addressing with Quadratic probing as collision resolution method.
- *
- * In this implementation, we use the following probing function H(k, x) = hashCode(k) + f(x) mod 2^n.
- * (f(x) = (x^2 + x) / 2)
- *
- * This probing function guarantees to find an empty cell (It generates all numbers in range [0, 2^n)
- * without repetition for the first 2^n numbers.
- * @class HashTableQuadraticProbing
- * @extends {HashTableOpenAddressing}
- */
-export class HashTableQuadraticProbing extends HashTableOpenAddressing {
-  constructor(cap, loadFactor) {
-    const probe = x => (x * x + x) >> 1;
-    const setProbe = () => {};
-    const incCap = capacity => 1 << (32 - Math.clz32(capacity));
-    const adjCap = capacity => {
-      const pow2 = highestOneBit(capacity);
-      return capacity === pow2 ? capacity : incCap(capacity);
-    };
-
-    super(adjCap, setProbe, probe, incCap, cap, loadFactor);
-  }
+export function HashTableQuadraticProbing (cap, loadFactor) {
+  HashTableOpenAddressing.call(this, cap, loadFactor, OpenAddressingScheme.QUADRATIC_PROBING);
 }
 
-/**
- * An implementation of Hash Table using Open Addressing with Double Hashing as collision resolution method.
- *
- * @class HashTableDoubleHashing
- * @extends {HashTableOpenAddressing}
- */
-export class HashTableDoubleHashing extends HashTableOpenAddressing {
-  #hash;
-
-  constructor(cap, loadFactor) {
-    const probe = function (x) {
-      return this.#hash * x;
-    };
-
-    const setProbe = function (key, capacity) {
-      this.#hash = normalizeIndex(hashCode2(key), capacity);
-      if (this.#hash === 0) this.#hash = 1;
-    };
-
-    const incCap = capacity => 2 * capacity + 1;
-
-    const adjCap = capacity => {
-      while (!isPrime(capacity)) capacity++;
-      return capacity;
-    };
-
-    super(adjCap, setProbe, probe, incCap, cap, loadFactor);
-  }
+export function HashTableDoubleHashing (cap, loadFactor) {
+  HashTableOpenAddressing.call(this, cap, loadFactor, OpenAddressingScheme.DOUBLE_HASHING);
 }
+
 
 /**
  * Hash Table implementation using Separate Chaining
@@ -410,11 +302,15 @@ export function HashTableSeparateChaining (cap, loadFactor) {
 
   //----------------------- Define local variables -----------------------------
   const maxLoadFactor = loadFactor ? loadFactor : DEFAULT_LOAD_FACTOR;
-  let capacity = cap ? Math.max(cap, DEFAULT_CAPACITY) : DEFAULT_CAPACITY;
-  let threshold = Math.floor(capacity * maxLoadFactor);
-  let arr = [...Array(capacity)]; // LinkedList[]
-  let size = 0;
-  let modificationCount = 0;
+  let capacity, threshold, size, arr, modificationCount;
+  const initializeTable = () => {
+    capacity = cap ? Math.max(cap, DEFAULT_CAPACITY) : DEFAULT_CAPACITY;
+    threshold = Math.floor(capacity * maxLoadFactor);
+    size = 0;
+    arr = [...Array(capacity)]; // LinkedList[]
+    modificationCount = 0;
+  };
+  initializeTable();
 
   //--------------------------- HELPER METHODS --------------------------------
   const index = hash => (hash & 0x7fffffff) % capacity; // get index of the provided hash value
@@ -469,11 +365,7 @@ export function HashTableSeparateChaining (cap, loadFactor) {
   this.hasKey = key => seekEntry(key) !== null;
   this.contains = key => this.hasKey(key);
 
-  this.clear = () => {
-    arr = [];
-    size = 0;
-    modificationCount++;
-  };
+  this.clear = initializeTable;
 
   /**
    * Retrieve an entry with a particular key.
