@@ -129,8 +129,14 @@ const testHashTable = (HashTable, subtitle) => {
       test('Hash table iterator should iterate through all the keys/values of the table', () => {
         for (let key of ht) expect(ht.contains(key));
 
+        // insert new element
         expect(() => {
           for (let key of ht) ht.insert('elena', 5);
+        }).toThrow('Concurrent Modification');
+
+        // update an existing element
+        expect(() => {
+          for (let key of ht) ht.insert('josh', 5);
         }).toThrow('Concurrent Modification');
       });
 
