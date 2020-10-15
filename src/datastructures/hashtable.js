@@ -398,30 +398,27 @@ export class HashTableDoubleHashing extends HashTableOpenAddressing {
   }
 }
 
-export function HashTableSeparateChaining(
-  capacity = DEFAULT_CAPACITY,
-  maxLoadFactor = DEFAULT_LOAD_FACTOR
-) {
-  if (capacity < 0) throw new Error('Illegal capacity');
-  if (maxLoadFactor <= 0 || maxLoadFactor > 1)
-    throw new Error('Illegal load factor');
+/**
+ * Hash Table implementation using Separate Chaining
+ * @param {number} cap initial capacity
+ * @param {number} loadFactor the max percentage of spots can be filled in the table before resizing
+ */
+export function HashTableSeparateChaining (cap, loadFactor) {
+  // Validate capacity and loadFactor values, if provided
+  if (cap < 0) throw new Error('Illegal capacity');
+  if (loadFactor <= 0 || loadFactor > 1) throw new Error('Illegal load factor');
 
-  // Initialize local variables
-  capacity = Math.max(DEFAULT_CAPACITY, capacity);
-  let size = 0;
+  //----------------------- Define local variables -----------------------------
+  const maxLoadFactor = loadFactor ? loadFactor : DEFAULT_LOAD_FACTOR;
+  let capacity = cap ? Math.max(cap, DEFAULT_CAPACITY) : DEFAULT_CAPACITY;
   let threshold = Math.floor(capacity * maxLoadFactor);
-  let table = [...Array(capacity)]; // LinkedList<Entry>[]
+  let arr = [...Array(capacity)]; // LinkedList[]
+  let size = 0;
+  let modificationCount = 0;
 
-  //---------------------------- HELPER METHODS ----------------------------
-  const isInvalidKey = key => key == null || key === '';
-
-  /**
-   * Convert a hash value into an index.
-   *
-   * Essentially, this strips the negative sign and places the hash value into the domain [0, capacity)
-   * @param {number} hash the hash value computed from a key
-   */
-  const normalizeIndex = hash => (hash & 0x7fffffff) % capacity;
+  //--------------------------- HELPER METHODS --------------------------------
+  const index = hash => (hash & 0x7fffffff) % capacity; // get index of the provided hash value
+  const isInvalidKey = key => (key == null || key === '');
 
   /**
    * Find an Entry with a particular key
@@ -431,10 +428,10 @@ export function HashTableSeparateChaining(
    */
   const seekEntry = (key, ind = null) => {
     if (!isInvalidKey(key)) {
-      const index = ind ? ind : normalizeIndex(hashCode(key));
-      const list = table[index];
-      if (!list) return null;
+      if (!ind) ind = index(hashCode(key));
 
+      const list = arr[ind];
+      if (!list) return null;
       for (let entry of list) if (entry.key === key) return entry;
     }
 
@@ -447,80 +444,36 @@ export function HashTableSeparateChaining(
   const resizeTable = () => {
     capacity *= 2;
     threshold = Math.floor(capacity * maxLoadFactor);
-    const newTable = [...Array(capacity)];
+    let newArr = [...Array(capacity)];
 
-    for (let i = 0; i < table.length; i++)
-      if (table[i]) {
-        for (let entry of table[i]) {
-          const index = normalizeIndex(entry.hash);
-          if (!newTable[index]) newTable[index] = new SinglyLinkedList();
-          newTable[index].add(entry);
+    for (let i = 0; i < arr.length; i++)
+      if (arr[i]) {
+        for (let entry of arr[i]) {
+          const ind = index(entry.hash);
+          if (!newArr[ind]) newArr[ind] = new SinglyLinkedList();
+          newArr[ind].add(entry);
         }
 
-        // Avoid memory leak
-        table[i].clear();
-        table[i] = null;
+        arr[i].clear();
+        arr[i] = null;
       }
-
-    table = newTable;
+    
+    arr = newArr;
+    newArr = null;
   };
 
-  /**
-   * Insert a new Entry to the table. If the same key already exist, update it with new value.
-   * @param {Entry} entry a new entry to be inserted
-   * @param {number} index the position in the table this entry will inserted at
-   * @returns {null | string | number} if such key already exists, return the old value. Otherwise return null.
-   */
-  const insertEntry = (entry, index) => {
-    if (!table[index]) table[index] = new SinglyLinkedList();
-
-    // get the linked list that will hold this new entry
-    const list = table[index];
-    const existingEntry = seekEntry(entry.key, index);
-
-    if (existingEntry) {
-      const oldValue = existingEntry.value;
-      existingEntry.value = entry.value;
-      return oldValue;
-    }
-
-    list.add(entry);
-    if (++size > threshold) resizeTable();
-    return null;
-  };
-
-  /**
-   * Remove an entry with a particular key
-   * @param {number | string} key key of the entry needs to be removed
-   * @param {number} index index position of the entry in the table
-   * @returns {null | number | string} the value of the entry removed if found
-   */
-  const removeEntry = (key, index) => {
-    const entry = seekEntry(key, index);
-    if (entry) {
-      const list = table[index];
-      list.removeValue(entry);
-      size--;
-      return entry.value;
-    }
-
-    return null;
-  };
-
-  //---------------------------- PUBLIC METHODS ----------------------------
+  //--------------------------- PUBLIC METHODS --------------------------------
   this.size = () => size;
   this.isEmpty = () => size === 0;
 
-  /**
-   * Clear the content of the hash table
-   */
-  this.clear = () => {
-    table = [...Array(capacity)];
-    size = 0;
-  };
-
   this.hasKey = key => seekEntry(key) !== null;
   this.contains = key => this.hasKey(key);
+
+  this.clear = () => {
+    arr = [];
+    size = 0;
+    modificationCount++;
+  };
 
   /**
    * Retrieve an entry with a particular key.
@@ -533,22 +486,6 @@ export function HashTableSeparateChaining(
   };
 
   /**
-   * Insert / add / put a new key-value pair into the table
-   * @param {number | string} key a key needs to be inserted
-   * @param {number | string} value a value needs to be inserted
-   * @returns {null | string | number} if such key already exists, return the old value. Otherwise return null.
-   */
-  this.insert = (key, value) => {
-    if (isInvalidKey(key)) throw new Error('Invalid Key');
-
-    const newEntry = new Entry(key, value);
-    const index = normalizeIndex(newEntry.hash);
-    return insertEntry(newEntry, index);
-  };
-  this.put = (key, value) => this.insert(key, value);
-  this.add = (key, value) => this.insert(key, value);
-
-  /**
    * Remove an entry with a particular key
    * @param {number | string} key key of the entry needs to be removed
    * @returns {null | number | string} the value of the entry removed if found
@@ -556,16 +493,50 @@ export function HashTableSeparateChaining(
   this.remove = key => {
     if (isInvalidKey(key)) return null;
 
-    const index = normalizeIndex(hashCode(key));
-    return removeEntry(key, index);
+    const ind = index(hashCode(key));
+    const entry = seekEntry(key, ind);
+    if (!entry) return null;
+
+    arr[ind].removeValue(entry);
+    size--;
+    modificationCount++;
+    return entry.value;
   };
+
+  /**
+   * Insert / add / put a new key-value pair into the table.
+   * If the same key already exist, update it with new value.
+   * @param {number | string} key a key needs to be inserted
+   * @param {number | string} value a value needs to be inserted
+   * @returns {null | string | number} if such key already exists, return the old value. Otherwise return null.
+   */
+  this.insert = (key, value) => {
+    if (isInvalidKey(key)) throw new Error('Invalid Key');
+    const newEntry = new Entry(key, value);
+    const ind = index(newEntry.hash);
+    modificationCount++;
+
+    const existingEntry = seekEntry(key, ind);
+    if (existingEntry) {
+      const oldValue = existingEntry.value;
+      existingEntry.value = newEntry.value;
+      return oldValue;
+    }
+
+    if (!arr[ind]) arr[ind] = new SinglyLinkedList();
+    arr[ind].add(newEntry);
+    if (++size > threshold) resizeTable();
+    return null;
+  };
+  this.add = (key, value) => this.insert(key, value);
+  this.put = (key, value) => this.insert(key, value);
 
   /**
    * Get list of keys in the table
    */
   this.keys = () => {
     const keys = [];
-    for (let list of table)
+    for (let list of arr)
       if (list) for (let entry of list) keys.push(entry.key);
     return keys;
   };
@@ -575,23 +546,21 @@ export function HashTableSeparateChaining(
    */
   this.values = () => {
     const values = [];
-    for (let list of table)
+    for (let list of arr)
       if (list) for (let entry of list) values.push(entry.value);
     return values;
   };
 
   /**
-   * An iterator to iterate over the keys of the table
+   * String reprentation of this hash table
    */
   this[Symbol.iterator] = function* () {
-    const expectedSize = size;
-
-    for (let list of table)
-      if (list)
-        for (let entry of list) {
-          if (expectedSize !== size) throw new Error('Concurrent Modification');
-          yield entry.key;
-        }
+    const changeCount = modificationCount;
+    for (let list of arr)
+      if (list) for (let entry of list) {
+        if (changeCount !== modificationCount) throw new Error('Concurrent Modification');
+        yield entry.key;
+      }
   };
 
   /**
@@ -600,10 +569,9 @@ export function HashTableSeparateChaining(
   this.toString = () => {
     let str = '{';
     let count = 0;
-    for (let list of table)
-      if (list)
-        for (let entry of list)
-          str = str.concat(`${entry.toString()}${++count < size ? ', ' : ''}`);
+    for (let list of arr)
+      if (list) for (let entry of list)
+        str = str.concat(`${entry.toString()}${++count < size ? ', ' : ''}`);
     return str.concat('}');
   };
 }
