@@ -43,6 +43,7 @@
 
 /**
  * Fenwick Tree implementation. The tree support sum range queries and point updates.
+ * When doing queries and updates, refer to the index as 1-based index.
  * @param {number[] | number} values An array of number or size of the fenwick tree
  */
 export function FenwickTree (values) {
@@ -109,11 +110,11 @@ export function FenwickTree (values) {
   this.get = index => {
     if (isInvalidIndex(index)) throw new Error('Index out of range');
     return this.sum(index, index);
-  }
+  };
 
   this.add = (index, value) => {
     if (isInvalidIndex(index)) throw new Error('Index out of range');
-    for(; index < size; index += lsb(index)) tree[index] += value;
+    for (; index < size; index += lsb(index)) tree[index] += value;
   };
 
   this.set = (index, value) => {
