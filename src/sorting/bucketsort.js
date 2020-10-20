@@ -1,4 +1,3 @@
-import { swap } from '../utils/swap';
 import { SinglyLinkedList } from '../datastructures/linkedList';
 
 /**
