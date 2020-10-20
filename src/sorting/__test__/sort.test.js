@@ -5,6 +5,7 @@ import { quickSort } from '../quicksort';
 import { mergeSort } from '../mergesort';
 import { heapSort } from '../heapsort';
 import { bucketSort } from '../bucketsort';
+import { countingSort } from '../countingsort';
 
 const expectedSortedPositiveArray = [2, 3, 4, 6, 8, 10, 13];
 const expectedSortedNegativeArray = [-13, -10, -8, -6, -4, -3, -2];
@@ -48,5 +49,6 @@ testInplaceSorting(bubbleSort, 'Bubble Sort');
 testInplaceSorting(quickSort, 'Quick Sort');
 testInplaceSorting(heapSort, 'Heap Sort');
 testInplaceSorting(bucketSort, 'Bucket Sort');
+testInplaceSorting(countingSort, 'Counting Sort');
 
 testSorting(mergeSort, 'Merge Sort');
