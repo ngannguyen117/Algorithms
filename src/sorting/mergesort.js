@@ -1,3 +1,11 @@
+/**
+ * Merge sort implementation, a sorting technique based on divide and conquer algorithm.
+ * 
+ * The idea of merge sort is to break the list in to sublists, sort smaller sublists into
+ * a larger one recursively.
+ * 
+ * O(nlog(n))
+ */
 export const mergeSort = array => {
   if (!array) return;
 
