@@ -3,6 +3,7 @@ import { insertionSort } from '../insertionsort';
 import { bubbleSort } from '../bubblesort';
 import { quickSort } from '../quicksort';
 import { mergeSort } from '../mergesort';
+import { heapSort } from '../heapsort';
 
 const expectedSortedPositiveArray = [2, 3, 4, 6, 8, 10, 13];
 const expectedSortedNegativeArray = [-13, -10, -8, -6, -4, -3, -2];
@@ -44,5 +45,6 @@ testInplaceSorting(selectionSort, 'Selection Sort');
 testInplaceSorting(insertionSort, 'Insertion Sort');
 testInplaceSorting(bubbleSort, 'Bubble Sort');
 testInplaceSorting(quickSort, 'Quick Sort');
+testInplaceSorting(heapSort, 'Heap Sort');
 
 testSorting(mergeSort, 'Merge Sort');
