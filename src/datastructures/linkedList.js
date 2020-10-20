@@ -73,6 +73,7 @@ export function DoublyLinkedList(comparator = compare()) {
   let head = null;
   let tail = null;
 
+  //----------------------------- HELPER METHODS ------------------------------
   /**
    * Check if the index is within the valid range [0, length). O(1)
    * @param {number} index an index number for the list
@@ -85,6 +86,69 @@ export function DoublyLinkedList(comparator = compare()) {
   this.isEmpty = () => length === 0;
 
   /**
+   * Find the middle node of the linked list start at node
+   * @param {Node} node a sub-head node
+   */
+  const getMiddleNode = node => {
+    if (!node) return node;
+
+    let slow = node;
+    let fast = node;
+    while (fast.next && fast.next.next) {
+      fast = fast.next.next;
+      slow = slow.next;
+    }
+
+    return slow;
+  };
+
+  /**
+   * Merge 2 sub-linked list into one and return a new sub-head node
+   * @param {Node} a a sub-head node
+   * @param {Node} b a sub-head node
+   * @returns {Node} new sub-head node
+   */
+  const merge = (a, b) => {
+    if (!a) return b;
+    if (!b) return a;
+
+    let node, nextNode;
+    if (a.compareTo(b) <= 0) {
+      node = a;
+      nextNode = merge(a.next, b);
+    } else {
+      node = b;
+      nextNode = merge(a, b.next);
+    }
+
+    node.next = nextNode;
+    nextNode.prev = node;
+    return node;
+  };
+
+  /**
+   * A recursive method to sort a linkedlist using merge sort. O(n(log(n)))
+   * @param {Node} node a sub-head node
+   * @returns {Node} new sub-head node
+   */
+  const mergeSort = node => {
+    if (!node || !node.next) return node;
+
+    const middleNode = getMiddleNode(node);
+    const nextOfMiddleNode = middleNode.next;
+
+    // split the linked list
+    middleNode.next = null;
+    nextOfMiddleNode.prev = null;
+
+    const left = mergeSort(node);
+    const right = mergeSort(nextOfMiddleNode);
+
+    return merge(left, right);
+  };
+
+  //----------------------------- PUBLIC METHODS ------------------------------
+  /**
    * Return data at the list's head, if the list is not empty. O(1)
    */
   this.peakFirst = () => (head ? head.data : null);
@@ -93,6 +157,18 @@ export function DoublyLinkedList(comparator = compare()) {
    * Return data at the list's tail, if the list is not empty. O(1)
    */
   this.peakLast = () => (tail ? tail.data : null);
+
+  /**
+   * Sort this linked list using merge sort. O(nlog(n))
+   */
+  this.sort = () => {
+    head = mergeSort(head);
+    
+    // update tail
+    let trav = head;
+    while (trav && trav.next) trav = trav.next;
+    tail = trav;
+  };
 
   /**
    * Clear the list by removing all nodes's pointers. O(n)
@@ -337,6 +413,7 @@ export function SinglyLinkedList(comparator = compare()) {
   this.size = () => length;
   this.isEmpty = () => length === 0;
 
+  //----------------------------- HELPER METHODS ------------------------------
   /**
    * Check if the index is within the valid range [0, length). O(1)
    * @param {number} index an index number for the list
@@ -346,6 +423,66 @@ export function SinglyLinkedList(comparator = compare()) {
   };
 
   /**
+   * Find the middle node of the linked list start at node
+   * @param {Node} node a sub-head node
+   */
+  const getMiddleNode = node => {
+    if (!node) return node;
+
+    let slow = node;
+    let fast = node;
+    while (fast.next && fast.next.next) {
+      fast = fast.next.next;
+      slow = slow.next;
+    }
+
+    return slow;
+  };
+
+  /**
+   * Merge 2 sub-linked list into one and return a new sub-head node
+   * @param {Node} a a sub-head node
+   * @param {Node} b a sub-head node
+   * @returns {Node} new sub-head node
+   */
+  const merge = (a, b) => {
+    if (!a) return b;
+    if (!b) return a;
+
+    let node;
+    if (a.compareTo(b) <= 0) {
+      node = a;
+      node.next = merge(a.next, b);
+    } else {
+      node = b;
+      node.next = merge(a, b.next);
+    }
+
+    return node;
+  };
+
+  /**
+   * A recursive method to sort a linkedlist using merge sort. O(n(log(n)))
+   * @param {Node} node a sub-head node
+   * @returns {Node} new sub-head node
+   */
+  const mergeSort = node => {
+    if (!node || !node.next) return node;
+
+    const middleNode = getMiddleNode(node);
+    const nextOfMiddleNode = middleNode.next;
+
+    // set middleNode's next to null
+    middleNode.next = null;
+
+    const left = mergeSort(node);
+    const right = mergeSort(nextOfMiddleNode);
+
+    return merge(left, right);
+  };
+
+  //----------------------------- PUBLIC METHODS ------------------------------
+  /**
    * Return data at the list's head, if the list is not empty. O(1)
    */
   this.peakFirst = () => (head ? head.data : null);
@@ -354,6 +491,18 @@ export function SinglyLinkedList(comparator = compare()) {
    * Return data at the list's tail, if the list is not empty. O(1)
    */
   this.peakLast = () => (tail ? tail.data : null);
+
+  /**
+   * Sort this linked list using merge sort. O(nlog(n))
+   */
+  this.sort = () => {
+    head = mergeSort(head);
+    
+    // update tail
+    let trav = head;
+    while (trav && trav.next) trav = trav.next;
+    tail = trav;
+  };
 
   /**
    * Clear the list by removing all nodes's pointers. O(n)
