@@ -273,6 +273,20 @@ const linkedListTest = (List, listName) => {
         expect(() => {
           for (let value of list) list.removeAt(4);
         }).toThrow('Concurrent Modification');
+      });
+
+      test('sort() should sort the linked list from smallest to largest', () => {
+        list.sort();
+        expect(list.toString()).toBe('0 1 2 5 9 10');
+
+        list.insert(14, 0);
+        list.insert(-4, 4);
+        list.insert(8, 2);
+        list.insert(-6, 8);
+        expect(list.toString()).toBe('14 0 8 1 2 -4 5 9 -6 10');
+
+        list.sort();
+        expect(list.toString()).toBe('-6 -4 0 1 2 5 8 9 10 14');
       })
     });
   });
