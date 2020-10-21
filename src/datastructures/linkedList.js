@@ -82,9 +82,6 @@ export function DoublyLinkedList(comparator = compare()) {
     if (index < 0 || index >= length) throw new Error('Index out of range');
   };
 
-  this.size = () => length;
-  this.isEmpty = () => length === 0;
-
   /**
    * Find the middle node of the linked list start at node
    * @param {Node} node a sub-head node
@@ -148,6 +145,9 @@ export function DoublyLinkedList(comparator = compare()) {
   };
 
   //----------------------------- PUBLIC METHODS ------------------------------
+  this.size = () => length;
+  this.isEmpty = () => length === 0;
+  
   /**
    * Return data at the list's head, if the list is not empty. O(1)
    */
