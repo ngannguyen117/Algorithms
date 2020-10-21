@@ -28,13 +28,14 @@ export const countingSort = (array) => {
   // Track the frequency of each element
   for (let v of array) frequency[v - minValue]++;
 
-  // find the start index for each element
+  // find the end index for each element
   for (let i = 1; i < size; i++) frequency[i] += frequency[i - 1];
 
   // place each element in the correct position
+  // start from last element of the original array
   const sortedArray = [];
-  for (let v of array)
-    sortedArray[frequency[v - minValue]++ - 1] = v;
+  for (let i = array.length - 1; i >= 0; i--)
+    sortedArray[frequency[array[i] - minValue]-- - 1] = array[i];
 
   return sortedArray;
 };

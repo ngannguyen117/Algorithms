@@ -1,10 +1,7 @@
 const getNumberOfDigits = number => {
   let count = 0;
-  if (count >= 0) ++count;
-  while (number / 10 >= 1) {
-    number = Math.floor(number / 10);
-    count++;
-  }
+  if (count >= 0) count++;
+  for (let i = number / 10; i >= 1; i /= 10) count++;
   return count;
 };
 
@@ -21,8 +18,8 @@ export const radixSort = array => {
     const frequency = [];
     for (let i = 0; i < range; i++) frequency.push(0);
 
-    for (let i = 0; i < array.length; i++) {
-      const ind = Math.floor(array[i] / placeValue) % range;
+    for (let v of array) {
+      const ind = Math.floor(v / placeValue) % range;
       frequency[ind]++;
     }
 
