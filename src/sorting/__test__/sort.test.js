@@ -6,6 +6,7 @@ import { mergeSort } from '../mergesort';
 import { heapSort } from '../heapsort';
 import { bucketSort } from '../bucketsort';
 import { countingSort } from '../countingsort';
+import { radixSort } from '../radixsort';
 
 const expectedSortedPositiveArray = [2, 3, 4, 6, 8, 10, 13];
 const expectedSortedNegativeArray = [-13, -10, -8, -6, -4, -3, -2];
@@ -49,6 +50,13 @@ testInplaceSorting(bubbleSort, 'Bubble Sort');
 testInplaceSorting(quickSort, 'Quick Sort');
 testInplaceSorting(heapSort, 'Heap Sort');
 testInplaceSorting(bucketSort, 'Bucket Sort');
-testInplaceSorting(countingSort, 'Counting Sort');
 
 testSorting(mergeSort, 'Merge Sort');
+testSorting(countingSort, 'Counting Sort');
+
+test('Test Radix Sort', () => {
+  const positiveArray = [10, 4, 6, 8, 13, 2, 3];
+  
+  expect(radixSort(positiveArray)).toStrictEqual(expectedSortedPositiveArray);
+  radixSort();
+});
