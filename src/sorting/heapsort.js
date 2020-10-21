@@ -24,12 +24,13 @@ export const heapSort = array => {
     while (true) {
       const left = 2 * i + 1;
       const right = 2 * i + 2;
-      let largest = i;
+      if (left >= n) break;
 
+      let largest = left;
       if (right < n && array[right] > array[largest]) largest = right;
-      if (left < n && array[left] > array[largest]) largest = left;
 
-      if (largest === i) break;
+      if (array[i] > array[largest]) break;
+
       swap(array, i, largest);
       i = largest;
     }
