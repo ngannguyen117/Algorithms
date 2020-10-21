@@ -43,10 +43,10 @@ function Entry (key, value) {
 
 const DEFAULT_CAPACITY = 7;
 const DEFAULT_LOAD_FACTOR = 0.65;
-const TOMSTONE = 'TOMBSTONE';
+const TOMBSTONE = 'TOMBSTONE';
 
 const gcd = (a, b) => {
-  if (b === 0) return a;
+  if (!b) return a;
   return gcd(b, a % b);
 };
 
@@ -88,12 +88,12 @@ const initializeScheme = scheme => {
       };
       break;
     case OpenAddressingScheme.DOUBLE_HASHING:
-      let hash;
+      let secondIndex;
       setProbe = (key, index) => {
-        hash = index(hashCode2(key));
-        if (hash === 0) hash = 1;
+        secondIndex = index(hashCode2(key));
+        if (secondIndex === 0) secondIndex = 1;
       };
-      probe = x => hash * x;
+      probe = x => secondIndex * x;
       adjustCapacity = capacity => {
         while (!isPrime(capacity)) capacity++;
         return capacity;
@@ -121,7 +121,7 @@ function HashTableOpenAddressing (cap, loadFactor, scheme) {
   const initializeTable = () => {
     capacity = cap ? Math.max(DEFAULT_CAPACITY, cap) : DEFAULT_CAPACITY;
     threshold = Math.floor(capacity * maxLoadFactor);
-    arr = [...Array(capacity)];
+    arr = [];
     size = 0;
     usedSlots = 0;
     modificationCount = 0;
@@ -139,14 +139,14 @@ function HashTableOpenAddressing (cap, loadFactor, scheme) {
     const offset = index(hashCode(key));
 
     for (let i = offset, j = -1, x = 1; arr[i]; i = index(offset + probe(x++))) {
-      if (arr[i].key === TOMSTONE)  j = j === -1 ? i : j; // record the first deleted cell index to perform lazy relocation
+      if (arr[i].key === TOMBSTONE)  j = j === -1 ? i : j; // record the first deleted cell index to perform lazy relocation
       else if (arr[i].key === key) {
         if (j === -1) return arr[i];
 
         // Previously encounter a deleted slot. We move the entry in i to j so that
         // if we need to find this key again, we'll find it faster. (lazy relocation)
         arr[j] = arr[i];
-        arr[i] = new Entry(TOMSTONE);
+        arr[i] = new Entry(TOMBSTONE);
         return arr[j];
       }
     }
@@ -160,19 +160,18 @@ function HashTableOpenAddressing (cap, loadFactor, scheme) {
     threshold = Math.floor(capacity * maxLoadFactor);
 
     // create a new table with new capacity and switch reference with the current table
-    let oldArr = [...Array(capacity)];
-    const temp = arr;
-    arr = oldArr;
-    oldArr = temp;
+    let temp = arr;
+    arr = [];
+    let oldArr = temp;
 
     // reset size and usedSlots since we'll perform insertion on all non-empty entries again
     usedSlots = 0;
     size = 0;
 
     for (let entry of oldArr)
-      if (entry && entry.key !== TOMSTONE) this.insert(entry.key, entry.value);
+      if (entry && entry.key !== TOMBSTONE) this.insert(entry.key, entry.value);
 
-    oldArr = null;
+    oldArr = temp = null;
   };
 
   //---------------------------- PUBLIC METHODS -----------------------------
@@ -194,15 +193,14 @@ function HashTableOpenAddressing (cap, loadFactor, scheme) {
     setProbe(key, index);
     const offset = index(hashCode(key));
 
-    for (let i = offset, x = 1; arr[i]; i = index(offset + probe(x++))) {
+    for (let i = offset, x = 1; arr[i]; i = index(offset + probe(x++)))
       if (arr[i].key === key) {
         const value = arr[i].value;
-        arr[i] = new Entry(TOMSTONE);
+        arr[i] = new Entry(TOMBSTONE);
         size--;
         modificationCount++;
         return value;
       }
-    }
 
     return null;
   };
@@ -212,15 +210,16 @@ function HashTableOpenAddressing (cap, loadFactor, scheme) {
     if (usedSlots >= threshold) resizeTable();
 
     setProbe(key, index);
-    const offset = index(hashCode(key));
+    const newEntry = new Entry(key, value)
+    const offset = index(newEntry.hash);
 
     for (let i = offset, x = 1, j = -1; ; i = index(offset + probe(x++))) {
       // found an empty spot, insert new entry
       if (!arr[i]) {
         if (j === -1) {
           usedSlots++;
-          arr[i] = new Entry(key, value);
-        } else arr[j] = new Entry(key, value);
+          arr[i] = newEntry;
+        } else arr[j] = newEntry;
 
         size++;
         modificationCount++;
@@ -228,7 +227,7 @@ function HashTableOpenAddressing (cap, loadFactor, scheme) {
       }
 
       // this slot is either not empty or it is a tombstone
-      if (arr[i].key === TOMSTONE) j = j === -1 ? i : j;
+      if (arr[i].key === TOMBSTONE) j = j === -1 ? i : j;
       else if (arr[i].key === key) {
         const oldValue = arr[i].value;
 
@@ -250,22 +249,24 @@ function HashTableOpenAddressing (cap, loadFactor, scheme) {
 
   this.keys = () => {
     const keys = [];
-    for (let entry of arr) if (entry) keys.push(entry.key);
+    for (let entry of arr)
+       if (entry && entry.key !== TOMBSTONE) keys.push(entry.key);
     return keys;
   };
 
   this.values = () => {
     const values = [];
-    for (let entry of arr) if (entry) values.push(entry.value);
+    for (let entry of arr)
+       if (entry && entry.key !== TOMBSTONE) values.push(entry.value);
     return values;
   };
 
   this[Symbol.iterator] = function* () {
     const changeCount = modificationCount;
     for (let entry of arr)
-      if (entry) {
+      if (entry && entry.key !== TOMBSTONE) {
         if (changeCount !== modificationCount) throw new Error('Concurrent Modification');
-        yield entry.data;
+        yield entry.key;
       }
   };
 
@@ -273,7 +274,7 @@ function HashTableOpenAddressing (cap, loadFactor, scheme) {
     let str = '{';
     let count = 0;
     for (let entry of arr)
-      if (entry)
+      if (entry && entry.key !== TOMBSTONE)
         str = str.concat(`${entry.toString()}${++count < size ? ', ' : ''}`);
     return str.concat('}');
   };
