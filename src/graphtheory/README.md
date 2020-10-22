@@ -65,6 +65,7 @@
   - Algorithms: BFS (unweighted graph), Dijkstra's, Bellman-Ford, Floyd-Warshall, A\*
 - **Connectivity**
   - Does there exist a path between node A and node B?
+  - Find connected components
   - Typical solutions: use UnionFind or search algorithm like DFS.
 - **Negative Cycles**
   - Does my weighted digraph have any negative cycles? If so, where?
