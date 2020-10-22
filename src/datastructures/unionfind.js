@@ -23,6 +23,8 @@
  *    - get component's size: α(n)
  *    - check if 2 nodes connected: α(n)
  *    - count number of components: O(1)
+ * 
+ * To see how UnionFind is used, check out function findCCsUnionFind at {@link https://github.com/ngantxnguyen/Algorithms/blob/master/src/graphtheory/problems/connectedComponents.js}
  */
 
 /**
@@ -84,10 +86,16 @@ export function UnionFind(size) {
   this.size = () => size;
 
   /**
+   * Get an array of which component an element belongs to
+   * @returns {number[]} an array of which elements in which component
+   */
+  this.getComponents = () => parent;
+
+  /**
    * Get the current number of components in this UnionFind
    * @returns {number} number of components
    */
-  this.components = () => componentCount;
+  this.getNumberOfComponents = () => componentCount;
 
   /**
    * Unify the components contain elem1 and elem2

@@ -23,7 +23,7 @@ describe('Test UnionFind', () => {
     test('Successful UnifonFind creation should set the size to the provided size, and initialize componentSize and parents arrays', () => {
       uf = new UnionFind(5);
       expect(uf.size()).toBe(5);
-      expect(uf.components()).toBe(5);
+      expect(uf.getNumberOfComponents()).toBe(5);
       for (let i = 0; i < 5; i++) expect(uf.componentSize(i)).toBe(1);
     });
   });
@@ -34,34 +34,34 @@ describe('Test UnionFind', () => {
     });
 
     test('Number of components decrements for each union call if the elements are not connected', () => {
-      expect(uf.components()).toBe(5);
+      expect(uf.getNumberOfComponents()).toBe(5);
 
       uf.union(0, 1);
-      expect(uf.components()).toBe(4);
+      expect(uf.getNumberOfComponents()).toBe(4);
 
       uf.union(1, 0);
-      expect(uf.components()).toBe(4);
+      expect(uf.getNumberOfComponents()).toBe(4);
 
       uf.union(1, 2);
-      expect(uf.components()).toBe(3);
+      expect(uf.getNumberOfComponents()).toBe(3);
 
       uf.union(0, 2);
-      expect(uf.components()).toBe(3);
+      expect(uf.getNumberOfComponents()).toBe(3);
 
       uf.union(2, 1);
-      expect(uf.components()).toBe(3);
+      expect(uf.getNumberOfComponents()).toBe(3);
 
       uf.union(3, 4);
-      expect(uf.components()).toBe(2);
+      expect(uf.getNumberOfComponents()).toBe(2);
 
       uf.union(4, 3);
-      expect(uf.components()).toBe(2);
+      expect(uf.getNumberOfComponents()).toBe(2);
 
       uf.union(1, 3);
-      expect(uf.components()).toBe(1);
+      expect(uf.getNumberOfComponents()).toBe(1);
 
       uf.union(4, 0);
-      expect(uf.components()).toBe(1);
+      expect(uf.getNumberOfComponents()).toBe(1);
     });
 
     test('Component size should change if there is a merge between components', () => {
@@ -70,6 +70,7 @@ describe('Test UnionFind', () => {
       expect(uf.componentSize(2)).toBe(1);
       expect(uf.componentSize(3)).toBe(1);
       expect(uf.componentSize(4)).toBe(1);
+      expect(uf.getComponents()).toStrictEqual([0, 1, 2, 3, 4]);
 
       uf.union(0, 1);
       expect(uf.componentSize(0)).toBe(2);
@@ -86,6 +87,7 @@ describe('Test UnionFind', () => {
       expect(uf.componentSize(4)).toBe(1);
 
       uf.union(0, 2);
+      expect(uf.getComponents()).toStrictEqual([0, 0, 0, 3, 4]);
       expect(uf.componentSize(0)).toBe(3);
       expect(uf.componentSize(1)).toBe(3);
       expect(uf.componentSize(2)).toBe(3);
@@ -93,6 +95,7 @@ describe('Test UnionFind', () => {
       expect(uf.componentSize(4)).toBe(1);
 
       uf.union(3, 4);
+      expect(uf.getComponents()).toStrictEqual([0, 0, 0, 3, 3]);
       expect(uf.componentSize(0)).toBe(3);
       expect(uf.componentSize(1)).toBe(3);
       expect(uf.componentSize(2)).toBe(3);
@@ -100,6 +103,7 @@ describe('Test UnionFind', () => {
       expect(uf.componentSize(4)).toBe(2);
 
       uf.union(1, 3);
+      expect(uf.getComponents()).toStrictEqual([0, 0, 0, 0, 3]);
       expect(uf.componentSize(0)).toBe(5);
       expect(uf.componentSize(1)).toBe(5);
       expect(uf.componentSize(2)).toBe(5);
@@ -107,6 +111,7 @@ describe('Test UnionFind', () => {
       expect(uf.componentSize(4)).toBe(5);
 
       uf.union(4, 0);
+      expect(uf.getComponents()).toStrictEqual([0, 0, 0, 0, 0]);
       expect(uf.componentSize(0)).toBe(5);
       expect(uf.componentSize(1)).toBe(5);
       expect(uf.componentSize(2)).toBe(5);
