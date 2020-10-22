@@ -57,3 +57,38 @@
 
   - Pros: Space efficiency for sparse graph, iterating over all edges is efficient
   - Cons: Less space efficient for dense graph, Edge weight look up is O(E)
+
+## Common Graph Theory Problems
+
+- **Shortest path problem**
+  - Given a weighted graph, find the shortest path of edges from node A to node B.
+  - Algorithms: BFS (unweighted graph), Dijkstra's, Bellman-Ford, Floyd-Warshall, A\*
+- **Connectivity**
+  - Does there exist a path between node A and node B?
+  - Typical solutions: use UnionFind or search algorithm like DFS.
+- **Negative Cycles**
+  - Does my weighted digraph have any negative cycles? If so, where?
+  - There's some context that negative cycles are beneficial. For example: trading currency accross multiple exchanges like USD -> Euro -> Yen -> USD. Cycle through multiple currencies, exchange one to another and come back to the orignal currency with more money than you originally started.
+  - Algorithms: Bellman-Ford, Floyd-Warshall
+- **Strongly Connected Components**
+  - SCCs can be thought of as self-contained cycles within a directed graph where every vertex in a given cycle can reach every other vertex in the same cycle.
+  - An alias to finding connected components of an undirected graph.
+  - Very useful in many algorithms as an intermediate step.
+  - Algorithms: Tarjan's, Kosaraju's
+- **Minimum Spanning Tree**
+  - A MST is a subset of edges of a connected, edge-weighted graph that connects all vertices together, without any cycles and with the minimum possible total edge weight.
+  - All MSTs of a graph have the same minimal cost but they're not identical.
+  - MSTs are seen in many applications such as designing a least cost network, circuit design, transportation network etc.
+  - Algorithms: Kruskal's, Prim's, Boruvka's
+- **Network flow (max flow)**
+  - Question: with an infinite input source, how much flow can we push through the network?
+  - Suppose edges are the roads with cars, pipes with water, hallway packed with people. Flow represents the volume of water allowed to go through the pipes, the number of cars on the roads can sustain in traffic and the maximum number of people that can navigate through the hallway.
+  - This is important because at some points, there will be a bottleneck that limits the amount of stuff we can allow to travel on the network. With this, we can identify the bottlenecks that slow down the whole network and fix the edges that have lower capacities.
+  - Algorithms: Ford-Fulkerson, Edmonds-Karp, Dinic's
+- **Traveling Salesman Problem**
+  - Given a list of cities and the distance between each pair of cities, what is the shortest possible route that visits each city exactly once and returns to the original city.
+  - Algorithms: Held-Karp, branch and bounce, approximattion algorithms
+- **Bridges & Articulation Points**
+  - A bridge (a cut edge) is any edge in a graph whose removal increase the number of connected components.
+  - An articulation point (a cut vertex) is any node in a graph whose removal increase the number of connected components.
+  - They hint at weak points, bottlenecks, or vulnerabilities of a graph.
