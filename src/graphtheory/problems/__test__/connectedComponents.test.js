@@ -22,6 +22,8 @@ const testConnectedComponents = (findCCs, technique) => {
     expect(components[3]).toBe(components[4]);
     expect(components[5]).toBe(components[5]);
     expect(components[6]).toBe(components[6]);
+    expect(components[1]).not.toBe(components[3]);
+    expect(components[1]).not.toBe(components[5]);
   });
 };
 
