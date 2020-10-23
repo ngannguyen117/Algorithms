@@ -31,7 +31,7 @@ import { SinglyLinkedList } from './linkedList';
  */
 export function ListStack(firstElement = null) {
   const list = new SinglyLinkedList();
-  if (firstElement) list.addFirst(firstElement);
+  if (firstElement != null) list.addFirst(firstElement);
 
   this.size = list.size;
   this.isEmpty = list.isEmpty;

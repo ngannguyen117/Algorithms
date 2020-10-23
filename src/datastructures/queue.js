@@ -30,7 +30,7 @@ import { SinglyLinkedList } from './linkedList';
  */
 export function Queue(firstElement = null) {
   const list = new SinglyLinkedList();
-  if (firstElement) list.addLast(firstElement);
+  if (firstElement != null) list.addLast(firstElement);
 
   this.size = list.size;
   this.isEmpty = list.isEmpty;
