@@ -410,9 +410,6 @@ export function SinglyLinkedList(comparator = compare()) {
   let head = null;
   let tail = null;
 
-  this.size = () => length;
-  this.isEmpty = () => length === 0;
-
   //----------------------------- HELPER METHODS ------------------------------
   /**
    * Check if the index is within the valid range [0, length). O(1)
@@ -482,6 +479,9 @@ export function SinglyLinkedList(comparator = compare()) {
   };
 
   //----------------------------- PUBLIC METHODS ------------------------------
+  this.size = () => length;
+  this.isEmpty = () => length === 0;
+
   /**
    * Return data at the list's head, if the list is not empty. O(1)
    */
