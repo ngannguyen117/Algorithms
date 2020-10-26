@@ -46,7 +46,7 @@ const DEFAULT_LOAD_FACTOR = 0.65;
 const TOMBSTONE = 'TOMBSTONE';
 
 const gcd = (a, b) => {
-  if (!b) return a;
+  if (!b) return Math.abs(a);
   return gcd(b, a % b);
 };
 
