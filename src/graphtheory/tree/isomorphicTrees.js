@@ -3,7 +3,7 @@ import { TreeNode } from '../../utils/tree';
 import { mergeSort } from '../../sorting/mergesort';
 import { treeCenter } from './treeCenter';
 import { rootTree } from './rootTree';
-import { Queue, queue } from '../../datastructures/queue';
+import { Queue } from '../../datastructures/queue';
 
 export const Method = Object.freeze({
   ROOTED_TREE: 'rooted tree',
