@@ -5,6 +5,7 @@ import { addUndirectedEdge } from '../../../utils/graph';
 const testLCA = method => {
   test(`Test finding lowest common ancestor with ${method}`, () => {
     const graph = new Map();
+    const size = 17;
     addUndirectedEdge(graph, 0, 1);
     addUndirectedEdge(graph, 0, 2);
     addUndirectedEdge(graph, 1, 3);
@@ -24,7 +25,7 @@ const testLCA = method => {
 
     const root = rootTree(graph, 0);
 
-    const solver = lowestCommonAncestor(root);
+    const solver = lowestCommonAncestor(root, size, method);
     expect(solver.lca(1, 20)).toBeNull();
     expect(solver.lca(12, 12)).toBe(12);
     expect(solver.lca(14, 16)).toBe(11);
@@ -35,3 +36,4 @@ const testLCA = method => {
 };
 
 testLCA(Method.DFS);
+testLCA(Method.EULER_TOUR);

@@ -11,6 +11,7 @@
  */
 
 import { TreeNode } from '../../utils/tree';
+import { SparseTable, Operation } from '../../datastructures/sparsetable';
 
 export const Method = Object.freeze({
   DFS: 'Depth First Search',
@@ -27,6 +28,10 @@ export const Method = Object.freeze({
  * 
  * Time Complexity: runtime O(V + E)
  * Space Complexity: O(1)
+ * 
+ * @param {TreeNode} root the root of a tree
+ * @param {number} id1 id of node #1
+ * @param {number} id2 id of node #2
  */
 const dfs = (root, id1, id2) => {
   let ancestor;
@@ -50,18 +55,74 @@ const dfs = (root, id1, id2) => {
 };
 
 /**
+ * This implementation first finds a Euler tour from the root node which visits all the nodes in the tree.
+ * The node height values obtained from the Euler tour can then be used in combination with
+ * a sparse table to find the LCA in O(1).
+ * 
+ * This implementation should be used if we need to find LCA in a tree multiple time. It is efficient because
+ * all the later queries takes constant time to compute.
+ *
+ * Time Complexity: O(1) queries, O(nlog(n)) pre-processing.
+ *
+ * Space Complexity: O(nlog(n))
+ * 
+ * @param {TreeNode} root the root of a tree
+ * @param {number} size the number of vertices in this tree
+ */
+const eulerTour = (root, size) => {
+  const visit = (node, depth) => {
+    nodeOrder[tourIndex] = node;
+    nodeDepth[tourIndex] = depth;
+    lastOccurrenceIndex[node.id()] = tourIndex;
+    tourIndex++;
+  };
+
+  const constructEulerTour = (node, depth) => {
+    if (!node) return;
+
+    visit(node, depth);
+    for (let childNode of node.getChildren()) {
+      constructEulerTour(childNode, depth + 1);
+      visit(childNode, depth);
+    }
+  };
+
+  let tourIndex = 0;
+  const nodeDepth = []; // length = 2 * size + 1
+  const nodeOrder = []; // length = 2 * size + 1
+  const lastOccurrenceIndex = []; // size = tree size
+
+  constructEulerTour(root, 0);
+
+  // Initialize and build sparse table on the `nodeDepth` array which will
+  // allow us to index into the `nodeOrder` array and return the LCA.
+  const minSparseTable = new SparseTable(nodeDepth, Operation.MIN);
+
+  const lca = (id1, id2) => {
+    const left = Math.min(lastOccurrenceIndex[id1], lastOccurrenceIndex[id2]);
+    const right = Math.max(lastOccurrenceIndex[id1], lastOccurrenceIndex[id2]);
+    const index = minSparseTable.queryIndex(left, right);
+    return nodeOrder[index].id();
+  };
+
+  return lca;
+};
+
+/**
  * Find the lowest common ancestor of two nodes
  * @param {TreeNode} root the root of a tree
- * @param {number} id1 id of node #1
- * @param {number} id2 id of node #2
+ * @param {number} size the number of vertices in this tree
  * @param {Method} method which technique to use to find LCA
  */
-export const lowestCommonAncestor = (root, method) => {
+export const lowestCommonAncestor = (root, size, method) => {
+  let lca;
   switch (method) {
-    case Method.EULER_TOUR:
-      return eulerTour(root, id1, id2);
     case Method.DFS:
+      lca = (id1, id2) => dfs(root, id1, id2);
+    case Method.EULER_TOUR:
     default:
-      return { lca: (id1, id2) => dfs(root, id1, id2) };
+      lca = eulerTour(root, size);
   }
+
+  return { lca };
 };
