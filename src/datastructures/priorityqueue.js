@@ -41,6 +41,12 @@
  *    - Representation using Array:
  *      - By using an array, the insertion point is always the end of the array.
  *      - let i be the parent index, left child index = 2i + 1, right child index = 2i + 2
+ * 
+ * Indexed Priority Queue:
+ *  - A traditional priority queue invariant which on top of the regular PQ operations, it also supports quick updates and deletions of Key-Value pair.
+ *  - Complexity: (indexed binary heap)
+ *    - Update, Remove, Poll min key index, Poll min value, insert, decrease key, increase key: O(log(n))
+ *    - Value of, Contains, Peak min key index, Peak min value: O(1)
  */
 
 import { compare } from '../utils/compare';
@@ -248,4 +254,237 @@ export function BinaryHeap(comparator = compare()) {
   };
 
   this.toString = () => data.join(' ');
+}
+
+/**
+ * Indexed Priority Queue (IPQ) implementation using a D-ary heap which PQ to have quick
+ * updates and removals. The higher degree D is, the faster it takes to update, but it also takes
+ * more operations to remove/delete a key-value pair.
+ * 
+ * Example of how a min IPQ works:
+ *  - names = ['anna', 'bella', 'carly'], ages = [23, 12, 15] (anna is 23, bella is 12, carly is 15)
+ *  - for i, names[i] related to ages[i] => i is the key index
+ *  - We only insert ages IPQ. Age is used to determine priority. The ages array remains unchanged for the whole computation.
+ *  - The IPQ has an array pm that stores the ages' indexes with priority.
+ *  - In normal PQ, the underlying array stores the actual value and the first element in this array has the highest priority.
+ *  - However, in IPQ, the first element is the index of the value that has the highest priority.
+ *  - In this example, ipq.poll() returns 1
+ *  - names[1] is 'bella' which has the lowest age 12 - ages[1]. 
+ * 
+ * By default, it is a min heap and only accept string and number.
+ *
+ * However, you can provide your own comparator function to make it a max heap or for it to accept other data types.
+ *
+ * Comparator function has to follow this: (elem1, elem2) => {-1 | 0 | 1}
+ * @param {(e1, e2) => -1 | 0 | 1} comparator a function that take two input e1, e2, defines how to compare them.
+ */
+export function IndexedDHeap(deg, size, comparator = compare()) {
+  //-------------------------- Initialization --------------------------
+  if (deg == null) throw new Error('Invalid degree value');
+  if (size == null || size <= 0) throw new Error('Invalid size value');
+
+  const degree = Math.max(2, deg);
+  const maxSize = Math.max(degree + 1, size);
+  let curSize = 0;
+  const im = []; // inverse map (im's indexes = PQ's indexes): im[2] = 5 => in the PQ, the node at index 2 holds the key-value pair data[5]
+  const pm = []; // position map - position of key-value pair in the priority queue: pm[5] = 2 => key-value pair data[5] is at index 2 of the PQ
+  const data = []; // key-value pairs (key is array index, value is array element): const v = data[5] => ki = 5, value = v
+  const child = [];
+  const parent = [];
+
+  for (let i = 0; i < maxSize; i++) {
+    parent[i] = Math.floor((i - 1) / degree);
+    child[i] = i * degree + 1;
+    pm[i] = im[i] = -1;
+  }
+
+  //------------------------- HELPER METHODS --------------------------
+  const validateKeyIndex = ki => {
+    if (ki < 0 || ki >= maxSize) throw new Error('Key Index out of range');
+  };
+
+  const validateValue = value => {
+    if (value == null) throw new Error('Invalid Value');
+  };
+
+  const doesKeyIndexExist = ki => {
+    if (!this.contains(ki)) throw new Error('Key Index does not exist');
+  };
+
+  const hasPriority = (i, j) => comparator(data[im[i]], data[im[j]]) < 0;
+
+  const swap = (i, j) => {
+    pm[im[j]] = i;
+    pm[im[i]] = j;
+    const tmp = im[i];
+    im[i] = im[j];
+    im[j] = tmp;
+  };
+
+  /**
+   * From the parent index i, find the most promising child below it
+   * @param {number} i index in the im array (IPQ's)
+   */
+  const getChild = i => {
+    let index = -1;
+    const upperBound = Math.min(curSize, child[i] + degree);
+
+    for (let j = child[i]; j < upperBound; j++)
+      if (hasPriority(j, i)) index = i = j;
+      
+    return index;
+  };
+
+  /**
+   * Sift the element down the heap if it has lower priority than its children
+   */
+  const sink = i => {
+    for (let j = getChild(i); j != -1; j = getChild(i)) {
+      swap(i, j);
+      i = j;
+    }
+  };
+
+  /**
+   * Bubble the element up if it has higher priority than its parent
+   */
+  const swim = i => {
+    while (hasPriority(i, parent[i])) {
+      swap(i, parent[i]);
+      i = parent[i];
+    }
+  };
+
+  //------------------------- PUBLIC METHODS --------------------------
+  this.size = () => curSize;
+  this.isEmpty = () => curSize === 0;
+  this.contains = ki => {
+    validateKeyIndex(ki);
+    return pm[ki] !== -1;
+  };
+
+  /**
+   * Get the key index of the key-value pair with the highest priority
+   */
+  this.peakKeyIndex = () => this.isEmpty() ? null : im[0];
+
+  /**
+   * Delete the key-value pair with the highest priority
+   */
+  this.pollKeyIndex = () => {
+    const ki = this.peakKeyIndex();
+    if (ki != null) this.delete(ki);
+    return ki; 
+  };
+
+  /**
+   * Get the value of the key-value pair with the highest priority
+   */
+  this.peakValue = () => this.isEmpty() ? null : data[im[0]];
+
+  /**
+   * Delete the key-value pair with the highest priority
+   */
+  this.pollValue = () => {
+    const value = this.peakValue();
+    this.pollKeyIndex();
+    return value;
+  };
+  
+  this.valueOf = ki => this.contains(ki) ? data[ki] : null;
+
+  /**
+   * Insert a new key-value pair, doesn't accept duplicate key index
+   */
+  this.insert = (ki, value) => {
+    if (this.contains(ki)) throw new Error('Duplicate Key Index');
+    validateValue(value);
+
+    data[ki] = value;
+    pm[ki] = curSize;
+    im[curSize] = ki;
+    swim(curSize++);
+  };
+
+  /**
+   * Delete the key-value pair with the provided key index
+   */
+  this.delete = ki => {
+    doesKeyIndexExist(ki);
+
+    // swap value at index i, then sink/swim to maintain the heap invariant
+    const i = pm[ki];
+    swap(i, --curSize);
+    sink(i);
+    swim(i);
+
+    // clear value at index ki
+    const value = data[ki];
+    data[ki] = null;
+    pm[ki] = im[curSize] = -1;
+    return value;
+  };
+
+  /**
+   * Update the value of the Key index to the new value
+   */
+  this.update = (ki, value) => {
+    doesKeyIndexExist(ki);
+    validateValue(value);
+
+    const i = pm[ki];
+    const oldValue = data[ki];
+    data[ki] = value;
+    sink(i);
+    swim(i);
+
+    return oldValue;
+  };
+
+  /**
+   * Strictly increases the value associated with 'ki' to 'value'
+   */
+  this.increase = (ki, value) => {
+    doesKeyIndexExist(ki);
+    validateValue(value);
+
+    if (comparator(value, data[ki]) > 0) {
+      data[ki] = value;
+      swim(pm[ki]);
+      sink(pm[ki]);
+    }
+  };
+
+  /**
+   * Strictly decreases the value associated with 'ki' to 'value'
+   */
+  this.decrease = (ki, value) => {
+    doesKeyIndexExist(ki);
+    validateValue(value);
+
+    if (comparator(value, data[ki]) < 0) {
+      data[ki] = value;
+      swim(pm[ki]);
+      sink(pm[ki]);
+    }
+  };
+
+  this.isValidHeap = (i = 0) => {
+    const upperBound = Math.min(curSize, child[i] + degree);
+    for (let j = child[i]; j < upperBound; j++) {
+      if (hasPriority(j, i)) return false;
+      if (!this.isValidHeap(j)) return false;
+    }
+    return true;
+  };
+
+  this[Symbol.iterator] = function* () {
+    for (let i of im) if (i !== -1) yield i;
+  };
+
+  this.toString = () => {
+    const values = [];
+    for (let i of this) values.push(i);
+    return values.join(' ');
+  }
 }
