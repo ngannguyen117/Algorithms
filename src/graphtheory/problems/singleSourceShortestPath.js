@@ -17,6 +17,7 @@
 import { topSort } from '../fundamental/topologicalSort';
 import { Edge } from '../../utils/graph';
 import { IndexedDHeap } from '../../datastructures/priorityqueue';
+import { Queue } from '../../datastructures/queue';
 
 /**
  * Single Source Shortest Path (SSSP) finds the shortest distances from a provided
@@ -45,6 +46,49 @@ export const SSSPTopSort = (graph, numVertices, start) => {
         const newDist = dist[id] + edge.cost;
         dist[edge.to] = dist[edge.to] ? Math.min(dist[edge.to], newDist) : newDist;
       }
+  }
+
+  return dist;
+};
+
+/**
+ * Single Source Shortest Path (SSSP) finds the shortest distances from a provided
+ * start node to all other nodes in Undirected Unweighted graphs using BFS.
+ * 
+ * Complexity O(V + E)
+ * 
+ * @param {Map<number, Edge[]>} graph an adjaciency representation of a Undirected Unweighted graph
+ * @param {number} numVertices number of vertices of the graph 
+ * @param {number} start the starting's node index
+ * @returns {number[]} an array of indexes holding the distances from the start node to all other nodes
+ */
+export const SSSPBFS = (graph, numVertices, start) => {
+  const visited = [...Array(numVertices)].fill(false);
+  const dist = [...Array(numVertices)].fill(Number.POSITIVE_INFINITY);
+  const queue = new Queue(start);
+  visited[start] = true;
+  let nodesLeftInLayer = 1;
+  let nodesInNextLayer = 0;
+  let layer = 0;
+
+  while (!queue.isEmpty()) {
+    const at = queue.dequeue();
+    dist[at] = layer;
+
+    const edges = graph.get(at);
+    if (edges) for (let edge of edges)
+      if (!visited[edge.to]) {
+        visited[edge.to] = true;
+        queue.enqueue(edge.to);
+        nodesInNextLayer++;
+      }
+    
+    nodesLeftInLayer--;
+    if (nodesLeftInLayer === 0) {
+      nodesLeftInLayer = nodesInNextLayer;
+      nodesInNextLayer = 0;
+      layer++;
+    }
   }
 
   return dist;
