@@ -1,4 +1,4 @@
-import { SSSPTopSort, shortestPathTopSort } from '../shortestPath';
+import { SSSPTopSort, shortestPathTopSort, SSSPDijkstras, shortestPathDijkstras } from '../shortestPath';
 import { addDirectedEdge } from '../../../utils/graph';
 
 describe('Test all shortest path algorithms', () => {
@@ -82,6 +82,52 @@ describe('Test all shortest path algorithms', () => {
     expect(result.path).toStrictEqual([0]);
 
     result = shortestPathTopSort(graph, numVertices, 6, 0);
+    expect(result.distance).toBeNull();
+    expect(result.path).toStrictEqual([]);
+  });
+
+  test('Single source shortest path on Non-negative edge weight graphs using Dijkstras', () => {
+    const graph = new Map();
+    const numVertices = 6;
+    addDirectedEdge(graph, 0, 1, 5);
+    addDirectedEdge(graph, 0, 2, 1);
+    addDirectedEdge(graph, 1, 2, 2);
+    addDirectedEdge(graph, 1, 3, 3);
+    addDirectedEdge(graph, 1, 4, 20);
+    addDirectedEdge(graph, 2, 1, 3);
+    addDirectedEdge(graph, 2, 4, 12);
+    addDirectedEdge(graph, 3, 2, 3);
+    addDirectedEdge(graph, 3, 4, 2);
+    addDirectedEdge(graph, 3, 5, 6);
+    addDirectedEdge(graph, 4, 5, 1);
+
+    let distance = SSSPDijkstras(graph, numVertices, 0);
+    expect(distance).toStrictEqual([ 0, 4, 1, 7, 9, 10 ]);
+
+    distance = SSSPDijkstras(graph, numVertices, 4);
+    expect(distance).toStrictEqual([ Infinity, Infinity, Infinity, Infinity, 0, 1 ]);
+  });
+
+  test('Find the shortest path on a Non-negative edge weight graph from a start node to an end node by using Dijkstras', () => {
+    const graph = new Map();
+    const numVertices = 6;
+    addDirectedEdge(graph, 0, 1, 5);
+    addDirectedEdge(graph, 0, 2, 1);
+    addDirectedEdge(graph, 1, 2, 2);
+    addDirectedEdge(graph, 1, 3, 3);
+    addDirectedEdge(graph, 1, 4, 20);
+    addDirectedEdge(graph, 2, 1, 3);
+    addDirectedEdge(graph, 2, 4, 12);
+    addDirectedEdge(graph, 3, 2, 3);
+    addDirectedEdge(graph, 3, 4, 2);
+    addDirectedEdge(graph, 3, 5, 6);
+    addDirectedEdge(graph, 4, 5, 1);
+
+    let result = shortestPathDijkstras(graph, numVertices, 0, 5);
+    expect(result.distance).toBe(10);
+    expect(result.path).toStrictEqual([0, 2, 1, 3, 4, 5]);
+
+    result = shortestPathDijkstras(graph, numVertices, 2, 0);
     expect(result.distance).toBeNull();
     expect(result.path).toStrictEqual([]);
   });
