@@ -7,13 +7,14 @@
  * 
  * NOTES for SSSP:
  *  - Top Sort: weighted Directed Acyclic Graphs. Complexity: O(V + E)
- *  - BFS: large, unweighted graphs. Complexity: O(V + E)
+ *  - BFS: large, unweighted, unweighted graphs. Complexity: O(V + E)
  *  - Dijkstra's: Large/Medium non-negative edge weight graphs. Complexity:  O((V + E) x log(V))
  */
 
 import { topSort } from '../fundamental/topologicalSort';
 import { Edge } from '../../utils/graph';
 import { IndexedDHeap } from '../../datastructures/priorityqueue';
+import { Queue } from '../../datastructures/queue';
 
 /**
  * Find the shortest path from a starting node to an ending node on a DAG using top sort.
@@ -57,6 +58,55 @@ export const shortestPathTopSort = (graph, numVertices, start, end) => {
 
   if (path[0] !== start) return { distance: null, path: [] };
   return { distance: dist[end], path };
+};
+
+/**
+ * Find the SP using Breadth First Search on undirected, unweighted graph
+ * 
+ * @param {Map<number, Edge[]>} graph an adjaciency representation of a undirected graph
+ * @param {number} numVertices number of vertices of the graph 
+ * @param {number} start the starting node's index
+ * @param {number} end the ending node's index
+ * @returns {{distance: number; path: number[]}} distance from start to end and an array of
+ * indexes showing the shortest path from start node to end node
+ */
+export const shortestPathBFS = (graph, numVertices, start, end) => {
+  const visited = [...Array(numVertices)].fill(false);
+  const queue = new Queue(start);
+  const prev = [];
+  let distance = 0;
+  let nodeLeftInLayer = 1;
+  let nodeInNextLayer = 0;
+  visited[start] = true;
+
+  while (!queue.isEmpty()) {
+    const at = queue.dequeue();
+    if (at === end) break;
+
+    const edges = graph.get(at);
+    if (edges) for (let edge of edges)
+      if (!visited[edge.to]) {
+        visited[edge.to] = true;
+        queue.enqueue(edge.to);
+        nodeInNextLayer++;
+        prev[edge.to] = at;
+      }
+    
+    nodeLeftInLayer--;
+    if (nodeLeftInLayer === 0) {
+      nodeLeftInLayer = nodeInNextLayer;
+      nodeInNextLayer = 0;
+      distance++;
+    }
+  }
+
+  // reconstruct path
+  const path = [];
+  for (let at = end; at != null; at = prev[at]) path.push(at);
+  path.reverse();
+
+  if (path[0] !== start) return { distance: null, path: [] };
+  return { distance, path };
 };
 
 /**
