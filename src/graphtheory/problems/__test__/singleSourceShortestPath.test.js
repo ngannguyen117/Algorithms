@@ -1,5 +1,5 @@
-import { SSSPTopSort, SSSPDijkstras, SSSPBellmanFord } from '../singleSourceShortestPath';
-import { addDirectedEdge } from '../../../utils/graph';
+import { SSSPTopSort, SSSPBFS, SSSPDijkstras, SSSPBellmanFord } from '../singleSourceShortestPath';
+import { addDirectedEdge, addUndirectedEdge } from '../../../utils/graph';
 
 describe('Test all Single Source Shortest Path algorithms', () => {
   test('SSSP on Directed Acyclic Graphs using Top Sort', () => {
@@ -43,7 +43,52 @@ describe('Test all Single Source Shortest Path algorithms', () => {
     expect(distance[4]).toBe(6);
   });
 
+  test('SSSP on undirected, unweighted graphs using BFS', () => {
+    //                     0
+    //                /    |    \
+    //   5 --- 6 --- 7 --- 11    9
+    //                        /     \
+    //                      10 - 1 - 8 --- 12 --- 2 --- 3 --- 4
+                            
+    const numVertices = 13;
+    const graph = new Map();
+    addUndirectedEdge(graph, 0, 7);
+    addUndirectedEdge(graph, 0, 9);
+    addUndirectedEdge(graph, 0, 11);
+    addUndirectedEdge(graph, 1, 10);
+    addUndirectedEdge(graph, 2, 3);
+    addUndirectedEdge(graph, 2, 12);
+    addUndirectedEdge(graph, 3, 4);
+    addUndirectedEdge(graph, 5, 6);
+    addUndirectedEdge(graph, 6, 7);
+    addUndirectedEdge(graph, 7, 11);
+    addUndirectedEdge(graph, 8, 1);
+    addUndirectedEdge(graph, 8, 9);
+    addUndirectedEdge(graph, 8, 12);
+    addUndirectedEdge(graph, 9, 10);
+
+    let distance = SSSPBFS(graph, numVertices, 10);
+    expect(distance).toStrictEqual([2, 1, 4, 5, 6, 5, 4, 3, 2, 1, 0, 3, 3]);
+
+    distance = SSSPBFS(graph, numVertices, 0);
+    expect(distance).toStrictEqual([0, 3, 4, 5, 6, 3, 2, 1, 2, 1, 2, 1, 3]);
+  });
+
   test('SSSP on Non-negative edge weight graphs using Dijkstras', () => {
+    //                        3
+    //              (1) ------------> (3)
+    //            < | < \            / | \
+    //            / | |   \        /   |  \
+    //          5/  | |     \    /     |   \6
+    //          /   | |      \ /       |    >
+    //        (0)  2| |3     / \       |    (5)
+    //          \   | |    /3   \ 20   |2   >
+    //          1\  | |   /       \    |   /
+    //            \ | |  /         \   |  /1
+    //            > > | <           >  > /
+    //              (2) ------------> (4) 
+    //                        12
+
     const graph = new Map();
     const numVertices = 6;
     addDirectedEdge(graph, 0, 1, 5);
@@ -79,7 +124,7 @@ describe('Test all Single Source Shortest Path algorithms', () => {
     addDirectedEdge(graph, 6, 7, 4);
     addDirectedEdge(graph, 5, 7, 3);
 
-    let distance = SSSPBellmanFord(graph, numVertices, 0);
+    const distance = SSSPBellmanFord(graph, numVertices, 0);
     expect(distance).toStrictEqual([0, 1, -Infinity, -Infinity, -Infinity, 5, 5, 8, Infinity]);
   });
 });
