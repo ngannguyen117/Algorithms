@@ -210,3 +210,54 @@ export const shortestPathDijkstras = (graph, numVertices, start, end) => {
   if (path[0] !== start) return { distance: null, path: [] };
   return { distance: dist[end], path };
 };
+
+/**
+ * Single Source Shortest Path (SSSP) finds the shortest distances from a provided
+ * start node to all other nodes in the graph using Bellman Ford algorithm
+ * 
+ * Bellman Ford's algorithm has higher time complexity than Dijkstra's so we only
+ * use this algorithm when there are negative edge weights in a directed graph.
+ * It can also detect negative cycles.
+ * 
+ * Complexity O(VE)
+ * 
+ * @param {Map<number, Edge[]>} graph an adjaciency representation of a DAG 
+ * @param {number} numVertices number of vertices of the graph 
+ * @param {number} start the starting's node index
+ * @returns {number[]} an array of indexes holding the distances from the start node to all other nodes
+ */
+export const SSSPBellmanFord = (graph, numVertices, start) => {
+  const dist = [...Array(numVertices)].fill(Number.POSITIVE_INFINITY);
+  dist[start] = 0;
+
+  // Only in the worst case does it take V-1 iterations for the Bellman-Ford
+  // algorithm to complete. Another stopping condition is when we're unable to
+  // relax an edge, this means we have reached the optimal solution early.
+  let relaxable = true;
+
+  // For each vertex, apply relaxation for all the edges
+  for (let i = 0; i < numVertices - 1 && relaxable; i++) {
+    relaxable = false;
+    for (let edges of graph.values())
+      for (let edge of edges)
+        if (dist[edge.from] + edge.cost < dist[edge.to]) {
+          dist[edge.to] = dist[edge.from] + edge.cost;
+          relaxable = true;
+        }
+  }
+
+  // Run algorithm a second time to detect which nodes are part
+  // of a negative cycle. A negative cycle has occurred if we
+  // can find a better path beyond the optimal solution.
+  for (let i = 0; i < numVertices - 1 && relaxable; i++) {
+    relaxable = false;
+    for (let edges of graph.values())
+      for (let edge of edges)
+        if (dist[edge.from] + edge.cost < dist[edge.to]) {
+          dist[edge.to] = Number.NEGATIVE_INFINITY;
+          relaxable = true;
+        }
+  }
+
+  return dist;
+};
