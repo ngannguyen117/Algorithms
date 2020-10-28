@@ -9,8 +9,7 @@ import { Queue } from '../../datastructures/queue';
  * @returns {number} the distance
  */
 export const computeDistanceToFurthestNode = (graph, size, startNode) => {
-  const visited = [];
-  for (let i = 0; i < size; i++) visited.push(false);
+  const visited = [...Array(size)].fill(false);
   visited[startNode] = true;
 
   let distance = -1;
@@ -35,7 +34,6 @@ export const computeDistanceToFurthestNode = (graph, size, startNode) => {
       nodesLeftInLayer = nodesInNextLayer;
       nodesInNextLayer = 0;
     }
-    
   }
 
   return distance;
