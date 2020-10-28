@@ -1,4 +1,10 @@
-import { SSSPTopSort, shortestPathTopSort, SSSPDijkstras, shortestPathDijkstras } from '../shortestPath';
+import {
+  SSSPTopSort,
+  shortestPathTopSort,
+  SSSPDijkstras,
+  shortestPathDijkstras,
+  SSSPBellmanFord,
+} from '../shortestPath';
 import { addDirectedEdge } from '../../../utils/graph';
 
 describe('Test all shortest path algorithms', () => {
@@ -130,5 +136,23 @@ describe('Test all shortest path algorithms', () => {
     result = shortestPathDijkstras(graph, numVertices, 2, 0);
     expect(result.distance).toBeNull();
     expect(result.path).toStrictEqual([]);
+  });
+
+  test('Single source shortest path on negative edge weight connected graphs using Bellman Ford', () => {
+    const graph = new Map();
+    const numVertices = 9;
+    addDirectedEdge(graph, 0, 1, 1);
+    addDirectedEdge(graph, 1, 2, 1);
+    addDirectedEdge(graph, 2, 4, 1);
+    addDirectedEdge(graph, 4, 3, -3);
+    addDirectedEdge(graph, 3, 2, 1);
+    addDirectedEdge(graph, 1, 5, 4);
+    addDirectedEdge(graph, 1, 6, 4);
+    addDirectedEdge(graph, 5, 6, 5);
+    addDirectedEdge(graph, 6, 7, 4);
+    addDirectedEdge(graph, 5, 7, 3);
+
+    let distance = SSSPBellmanFord(graph, numVertices, 0);
+    expect(distance).toStrictEqual([0, 1, -Infinity, -Infinity, -Infinity, 5, 5, 8, Infinity]);
   });
 });
