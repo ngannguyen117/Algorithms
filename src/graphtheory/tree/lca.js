@@ -33,7 +33,10 @@ export const Method = Object.freeze({
  * @param {number} id1 id of node #1
  * @param {number} id2 id of node #2
  */
-const dfs = (root, id1, id2) => {
+const dfs = (root, id1, id2, size) => {
+  const isInvalidIndex = i => i < 0 || i >= size;
+  if (isInvalidIndex(id1) || isInvalidIndex(id2)) return null;
+
   let ancestor;
 
   const helper = node => {
@@ -51,7 +54,7 @@ const dfs = (root, id1, id2) => {
   };
 
   helper(root);
-  return ancestor ? ancestor.id() : null;
+  return ancestor.id();
 };
 
 /**
@@ -73,8 +76,7 @@ const eulerTour = (root, size) => {
   const visit = (node, depth) => {
     nodeOrder[tourIndex] = node;
     nodeDepth[tourIndex] = depth;
-    lastOccurrenceIndex[node.id()] = tourIndex;
-    tourIndex++;
+    lastOccurrenceIndex[node.id()] = tourIndex++;
   };
 
   const constructEulerTour = (node, depth) => {
@@ -83,9 +85,11 @@ const eulerTour = (root, size) => {
     visit(node, depth);
     for (let childNode of node.getChildren()) {
       constructEulerTour(childNode, depth + 1);
-      visit(childNode, depth);
+      visit(node, depth);
     }
   };
+
+  const isInvalidIndex = i => i < 0 || i >= size;
 
   let tourIndex = 0;
   const nodeDepth = []; // length = 2 * size + 1
@@ -99,6 +103,8 @@ const eulerTour = (root, size) => {
   const minSparseTable = new SparseTable(nodeDepth, Operation.MIN);
 
   const lca = (id1, id2) => {
+    if (isInvalidIndex(id1) || isInvalidIndex(id2)) return null;
+
     const left = Math.min(lastOccurrenceIndex[id1], lastOccurrenceIndex[id2]);
     const right = Math.max(lastOccurrenceIndex[id1], lastOccurrenceIndex[id2]);
     const index = minSparseTable.queryIndex(left, right);
@@ -118,7 +124,8 @@ export const lowestCommonAncestor = (root, size, method) => {
   let lca;
   switch (method) {
     case Method.DFS:
-      lca = (id1, id2) => dfs(root, id1, id2);
+      lca = (id1, id2) => dfs(root, id1, id2, size);
+      break;
     case Method.EULER_TOUR:
     default:
       lca = eulerTour(root, size);
