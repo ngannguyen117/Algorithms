@@ -1,4 +1,4 @@
-import { BinaryHeap } from '../priorityqueue';
+import { BinaryHeap, IndexedDHeap } from '../priorityqueue';
 import { compare } from '../../utils/compare';
 
 const testPriorityQueue = (PQ, pqName, desc = false) => {
@@ -233,3 +233,93 @@ const testPriorityQueue = (PQ, pqName, desc = false) => {
 
 testPriorityQueue(BinaryHeap, 'BinaryHeap');
 testPriorityQueue(BinaryHeap, 'BinaryHeap', true);
+
+describe('Test IndexedDHeap as Indexed Priority Queue', () => {
+  test('Invalid IndexedDHeap creation', () => {
+    expect(() => new IndexedDHeap()).toThrow('Invalid degree value');
+    expect(() => new IndexedDHeap(0)).toThrow('Invalid size value');
+    expect(() => new IndexedDHeap(0, 0)).toThrow('Invalid size value');
+  });
+
+  describe('Test Min IndexedDHeap with degree = 2', () => {
+    const names = ['Anna', 'Bella', 'Carly', 'Dylan', 'Emily', 'Fred', 'George', 'Henry', 'Issac', 'James', 'Kelly', 'Laura', 'Mary'];
+    const values = [3, 15, 11, 17, 7, 9, 2, 1, 6, 5, 16, 4, 2];
+    let ipq;
+
+    test('Do testing on empty IPQ', () => {
+      ipq = new IndexedDHeap(2, 15);
+    
+      expect(ipq.size()).toBe(0);
+      expect(ipq.isEmpty()).toBeTruthy();
+      expect(ipq.isValidHeap()).toBeTruthy();
+      expect(ipq.toString()).toBe('');
+      expect(ipq.peakKeyIndex()).toBeNull();
+      expect(ipq.pollKeyIndex()).toBeNull();
+      expect(ipq.peakValue()).toBeNull();
+      expect(ipq.pollValue()).toBeNull();
+      expect(ipq.contains(3)).toBeFalsy();
+      expect(ipq.valueOf(3)).toBeNull();
+
+      expect(() => ipq.contains(15)).toThrow('Key Index out of range');
+      expect(() => ipq.valueOf(15)).toThrow('Key Index out of range');
+      expect(() => ipq.delete(2)).toThrow('Key Index does not exist');
+      expect(() => ipq.update(2)).toThrow('Key Index does not exist');
+      expect(() => ipq.increase(2)).toThrow('Key Index does not exist');
+      expect(() => ipq.decrease(0)).toThrow('Key Index does not exist');
+    });
+
+    test('Do testing on non-empty IPQ', () => {
+      ipq = new IndexedDHeap(2, 15);
+      for (let i = 0; i < 13; i++) ipq.insert(i, values[i]);
+      expect(ipq.size()).toBe(13);
+      expect(ipq.isValidHeap()).toBeTruthy();
+
+      expect(ipq.contains(3)).toBeTruthy();
+      expect(ipq.valueOf(3)).toBe(17);
+      expect(ipq.peakKeyIndex()).toBe(7);
+      expect(ipq.peakValue()).toBe(1);
+      expect(values[7]).toBe(1);
+      expect(ipq.toString()).toBe('7 6 12 8 9 0 5 3 4 1 10 2 11');
+      expect(ipq.contains(14)).toBeFalsy();
+
+      // insert null value
+      expect(() => ipq.insert(13)).toThrow('Invalid Value');
+      expect(() => ipq.insert(11, 3)).toThrow('Duplicate Key Index');
+
+      // Poll the root node
+      expect(ipq.pollKeyIndex()).toBe(7);
+      expect(ipq.peakKeyIndex()).toBe(6);
+      expect(ipq.peakValue()).toBe(2);
+      expect(ipq.size()).toBe(12);
+      expect(ipq.toString()).toBe('6 11 12 8 9 0 5 3 4 1 10 2');
+      expect(() => ipq.delete(7)).toThrow('Key Index does not exist');
+
+      // Delete a random node
+      ipq.delete(11);
+      expect(ipq.toString()).toBe('6 9 12 8 2 0 5 3 4 1 10');
+
+      // update value
+      expect(ipq.update(2, 1)).toBe(11);
+      expect(ipq.valueOf(2)).toBe(1);
+      expect(ipq.peakKeyIndex()).toBe(2);
+      expect(ipq.peakValue()).toBe(1);
+      expect(ipq.toString()).toBe('2 6 12 8 9 0 5 3 4 1 10');
+
+      // Decrease key
+      ipq.decrease(5, 15);
+      expect(ipq.valueOf(5)).toBe(9);
+      ipq.decrease(5, 0);
+      expect(ipq.valueOf(5)).toBe(0);
+      expect(ipq.peakKeyIndex()).toBe(5);
+      expect(ipq.peakValue()).toBe(0);
+
+      // Increase key
+      ipq.increase(5, -5);
+      expect(ipq.valueOf(5)).toBe(0);
+      ipq.increase(5, 9);
+      expect(ipq.valueOf(5)).toBe(9);
+      expect(ipq.peakKeyIndex()).not.toBe(5);
+      expect(ipq.peakValue()).not.toBe(0);
+    });
+  });
+});
