@@ -1,5 +1,5 @@
-import { shortestPathTopSort, shortestPathDijkstras } from '../shortestPath';
-import { addDirectedEdge } from '../../../utils/graph';
+import { shortestPathTopSort, shortestPathBFS, shortestPathDijkstras } from '../shortestPath';
+import { addDirectedEdge, addUndirectedEdge } from '../../../utils/graph';
 
 describe('Test all algorithms for finding Shortest Path from a start node to end nodes', () => {
   test('Find the SP on a DAG using top sort', () => {
@@ -45,7 +45,54 @@ describe('Test all algorithms for finding Shortest Path from a start node to end
     expect(result.path).toStrictEqual([]);
   });
 
+  test('Find the SP on undirected, unweighted graphs using BFS', () => {
+    //                     0
+    //                /    |    \
+    //   5 --- 6 --- 7 --- 11    9
+    //                        /     \
+    //                      10 - 1 - 8 --- 12 --- 2 --- 3 --- 4
+                            
+    const numVertices = 13;
+    const graph = new Map();
+    addUndirectedEdge(graph, 0, 7);
+    addUndirectedEdge(graph, 0, 9);
+    addUndirectedEdge(graph, 0, 11);
+    addUndirectedEdge(graph, 1, 10);
+    addUndirectedEdge(graph, 2, 3);
+    addUndirectedEdge(graph, 2, 12);
+    addUndirectedEdge(graph, 3, 4);
+    addUndirectedEdge(graph, 5, 6);
+    addUndirectedEdge(graph, 6, 7);
+    addUndirectedEdge(graph, 7, 11);
+    addUndirectedEdge(graph, 8, 1);
+    addUndirectedEdge(graph, 8, 9);
+    addUndirectedEdge(graph, 8, 12);
+    addUndirectedEdge(graph, 9, 10);
+
+    let result = shortestPathBFS(graph, numVertices, 0, 1);
+    expect(result.distance).toBe(3);
+    expect(result.path).toStrictEqual([0, 9, 8, 1]);
+
+    result = shortestPathBFS(graph, numVertices, 6, 7);
+    expect(result.distance).toBe(1);
+    expect(result.path).toStrictEqual([6, 7]);
+  });
+
   test('Find the SP on a Non-negative edge weight graph using Dijkstras', () => {
+    //                        3
+    //              (1) ------------> (3)
+    //            < | < \            / | \
+    //            / | |   \        /   |  \
+    //          5/  | |     \    /     |   \6
+    //          /   | |      \ /       |    >
+    //        (0)  2| |3     / \       |    (5)
+    //          \   | |    /3   \ 20   |2   >
+    //          1\  | |   /       \    |   /
+    //            \ | |  /         \   |  /1
+    //            > > | <           >  > /
+    //              (2) ------------> (4) 
+    //                        12
+
     const graph = new Map();
     const numVertices = 6;
     addDirectedEdge(graph, 0, 1, 5);
