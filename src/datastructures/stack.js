@@ -36,12 +36,7 @@ export function ListStack(firstElement = null) {
   this.size = list.size;
   this.isEmpty = list.isEmpty;
   this.clear = list.clear;
-
-  /**
-   * Push new value to the front of the stack. O(1)
-   * @param {string | number} value
-   */
-  this.push = value => list.addFirst(value);
+  this.push = list.addFirst; // Push new value to the front of the stack. O(1)
 
   /**
    * Remove and return the top element in the stack. O(1)
@@ -67,7 +62,7 @@ export function ListStack(firstElement = null) {
 
   this.toString = () => {
     const values = [];
-    for (let value of this) values.push(value);
+    for (let data of this) values.push(data.toString ? data.toString() : data);
     return values.reverse().join(' ');
   };
 }
@@ -79,7 +74,7 @@ export function ListStack(firstElement = null) {
  */
 export function ArrayStack(firstElement = null) {
   let data = [];
-  if (firstElement) data.push(firstElement);
+  if (firstElement != null) data.push(firstElement);
 
   this.size = () => data.length;
   this.isEmpty = () => data.length === 0;
