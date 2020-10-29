@@ -40,10 +40,7 @@ export function Queue(firstElement = null) {
    * Get the element at the front of the queue without modifying the queue. O(1)
    * @returns {string | number} front element
    */
-  this.peak = () => {
-    if (this.isEmpty()) throw new Error('Queue Empty');
-    return list.peakFirst();
-  };
+  this.peak = () => this.isEmpty() ? null : list.peakFirst();
 
   /**
    * Adding element to the end of the queue (polling). O(1)
@@ -55,10 +52,7 @@ export function Queue(firstElement = null) {
    * Remove the front element of the queue and return its value. O(1)
    * @returns {string | number} front element
    */
-  this.dequeue = () => {
-    if (this.isEmpty()) throw new Error('Queue Empty');
-    return list.removeFirst();
-  };
+  this.dequeue = () => this.isEmpty() ? null : list.removeFirst();
 
   this[Symbol.iterator] = list[Symbol.iterator];
 

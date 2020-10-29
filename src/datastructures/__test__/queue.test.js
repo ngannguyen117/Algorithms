@@ -16,9 +16,9 @@ describe('Testing Queue implemented using SinglyLinkedList', () => {
       expect(queue.isEmpty()).toBeTruthy();
     });
 
-    test('Peak and Enqueuing on empty queue should throw an exception', () => {
-      expect(() => queue.dequeue()).toThrow('Queue Empty');
-      expect(() => queue.peak()).toThrow('Queue Empty');
+    test('Peak and Enqueuing on empty queue should return null', () => {
+      expect(queue.dequeue()).toBeNull();
+      expect(queue.peak()).toBeNull();
     });
 
     test('Initialize a new queue with an element should include it in the queue', () => {
@@ -95,7 +95,7 @@ describe('Testing Queue implemented using SinglyLinkedList', () => {
       expect(queue.size()).toBe(0);
       expect(queue.toString()).toBe('');
 
-      expect(() => queue.dequeue()).toThrow('Queue Empty');
+      expect(queue.dequeue()).toBeNull();
     });
   });
 });

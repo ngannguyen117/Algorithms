@@ -17,9 +17,9 @@ const testStack = (Stack, stackName) => {
         expect(stack.isEmpty()).toBeTruthy();
       });
 
-      test('Pop and peak on empty stack should throw an exception', () => {
-        expect(() => stack.pop()).toThrow('Stack Empty');
-        expect(() => stack.peak()).toThrow('Stack Empty');
+      test('Pop and peak on empty stack should return null', () => {
+        expect(stack.pop()).toBeNull();
+        expect(stack.peak()).toBeNull();
       });
 
       test('Initialize a new stack with an element should include it in the stack', () => {

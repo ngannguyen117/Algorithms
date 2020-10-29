@@ -42,21 +42,13 @@ export function ListStack(firstElement = null) {
    * Remove and return the top element in the stack. O(1)
    * @returns {string | number} stack's top element
    */
-  this.pop = () => {
-    if (this.isEmpty()) throw new Error('Stack Empty');
-
-    return list.removeFirst();
-  };
+  this.pop = () => this.isEmpty() ? null : list.removeFirst();
 
   /**
    * Get the stack's top element without removing it. O(1)
    * @returns {string | number} stack's top element
    */
-  this.peak = () => {
-    if (this.isEmpty()) throw new Error('Stack Empty');
-
-    return list.peakFirst();
-  };
+  this.peak = () => this.isEmpty() ? null : list.peakFirst();
 
   this[Symbol.iterator] = list[Symbol.iterator];
 
@@ -90,19 +82,13 @@ export function ArrayStack(firstElement = null) {
    * Get the stack's top element without removing it. O(1)
    * @returns {string | number} stack's top element
    */
-  this.peak = () => {
-    if (this.isEmpty()) throw new Error('Stack Empty');
-    return data[data.length - 1];
-  };
+  this.peak = () => this.isEmpty() ? null : data[data.length - 1];
 
   /**
    * Remove and return the top element in the stack. O(1)
    * @returns {string | number} stack's top element
    */
-  this.pop = () => {
-    if (this.isEmpty()) throw new Error('Stack Empty');
-    return data.pop();
-  };
+  this.pop = () => this.isEmpty() ? null : data.pop();
 
   this[Symbol.iterator] = function* () {
     for (let i = this.size() - 1; i >= 0; i--) yield data[i];
