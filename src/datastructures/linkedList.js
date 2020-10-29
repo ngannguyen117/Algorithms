@@ -39,7 +39,6 @@
 
 import { compare } from '../utils/compare';
 
-
 /**
  * Doubly Linked List that allows duplicate values.
  *
@@ -80,6 +79,23 @@ export function DoublyLinkedList(comparator = compare()) {
    */
   const validateIndex = index => {
     if (index < 0 || index >= length) throw new Error('Index out of range');
+  };
+
+  /**
+   * Remove an arbitrary node from the list. O(1)
+   * @param {Node} node node to be removed
+   * @returns {string | number} the removed node's data
+   */
+  const removeNode = node => {
+    if (!node.prev) return this.removeFirst();
+    if (!node.next) return this.removeLast();
+
+    [node.prev.next, node.next.prev] = [node.next, node.prev];
+    const data = node.data;
+    node.next = node.prev = null;
+
+    length--;
+    return data;
   };
 
   /**
@@ -275,23 +291,6 @@ export function DoublyLinkedList(comparator = compare()) {
   };
 
   /**
-   * Remove an arbitrary node from the list. O(1)
-   * @param {Node} node node to be removed
-   * @returns {string | number} the removed node's data
-   */
-  this.removeNode = node => {
-    if (!node.prev) return this.removeFirst();
-    if (!node.next) return this.removeLast();
-
-    [node.prev.next, node.next.prev] = [node.next, node.prev];
-    const data = node.data;
-    node.next = node.prev = null;
-
-    length--;
-    return data;
-  };
-
-  /**
    * Remove a node at the specified index. O(n)
    * @param {number} index the index of the node to be removed
    * @returns {string | number} the removed node's data
@@ -305,7 +304,7 @@ export function DoublyLinkedList(comparator = compare()) {
     let trav = head;
     for (let i = 0; i < index; i++) trav = trav.next;
 
-    return this.removeNode(trav);
+    return removeNode(trav);
   };
 
   /**
@@ -316,7 +315,7 @@ export function DoublyLinkedList(comparator = compare()) {
   this.removeValue = value => {
     for (let trav = head; trav; trav = trav.next)
       if (trav.compareTo(value) === 0) {
-        this.removeNode(trav);
+        removeNode(trav);
         return true;
       }
 
@@ -333,7 +332,7 @@ export function DoublyLinkedList(comparator = compare()) {
     for (let trav = head; trav; trav = trav.next)
       if (trav.compareTo(value) === 0) {
         const prev = trav.prev;
-        this.removeNode(trav);
+        removeNode(trav);
         if (prev) trav = prev;
 
         found = true;
@@ -348,7 +347,7 @@ export function DoublyLinkedList(comparator = compare()) {
    * @returns {number} the node's index, or -1 if it doesn't exist
    */
   this.indexOf = value => {
-    for (let trav = head, i = 0; trav, i < length; trav = trav.next, i++)
+    for (let trav = head, i = 0; trav; trav = trav.next, i++)
       if (trav.compareTo(value) === 0) return i;
     return -1;
   };
@@ -375,9 +374,12 @@ export function DoublyLinkedList(comparator = compare()) {
    * Define the toString method for the list, it returns the list of data in each node, seperated by one space. O(n)
    */
   this.toString = () => {
-    const values = [];
-    for (let data of this) values.push(data);
-    return values.join(' ');
+    let str = '';
+    let count = 0;
+    for (let data of this)
+      str = str.concat(`${data.toString ? data.toString() : data}${++count < length ? ' ' : ''}`);
+
+    return str;
   };
 }
 
@@ -710,8 +712,10 @@ export function SinglyLinkedList(comparator = compare()) {
   };
 
   this.toString = () => {
-    const values = [];
-    for (let data of this) values.push(data.toString());
-    return values.join(' ');
+    let str = '';
+    let count = 0;
+    for (let data of this)
+      str = str.concat(`${data.toString ? data.toString() : data}${++count < length ? ' ' : ''}`);
+    return str;
   };
 }
