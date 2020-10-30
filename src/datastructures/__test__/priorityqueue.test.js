@@ -284,6 +284,7 @@ describe('Test IndexedDHeap as Indexed Priority Queue', () => {
 
       // insert null value
       expect(() => ipq.insert(13)).toThrow('Invalid Value');
+      expect(() => ipq.insert(13, '')).toThrow('Invalid Value');
       expect(() => ipq.insert(11, 3)).toThrow('Duplicate Key Index');
 
       // Poll the root node

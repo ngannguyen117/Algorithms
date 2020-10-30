@@ -17,7 +17,7 @@
  *  - Complexity: (implemented with binary heap)
  *    - Binary Heap Construction: O(n)
  *    - Poll: O(log(n))
- *    - Peak: O(log(1))
+ *    - Peak: O(1)
  *    - Add: O(log(n))
  *    - Naive remove: O(n)
  *    - Naive contain: O(n)
@@ -63,19 +63,15 @@ import { compare } from '../utils/compare';
 export function BinaryHeap(comparator = compare()) {
   let data = [];
 
-  this.size = () => data.length;
-  this.isEmpty = () => this.size() === 0;
-  this.clear = () => (data = []); // O(1)
-
   //----------------------------- HELPER METHODS -------------------------------
   /**
    * Check if element at index i has higher priority over element at index j. O(1)
-   * It does if the comparator returns -1 or 0
+   * It does if the comparator returns -1
    * @param {number} i index of element at position i
    * @param {number} j index of element at position j
    * @returns {boolean} true if elems[i] has higher priority than elems[j]
    */
-  const hasPriority = (i, j) => comparator(data[i], data[j]) <= 0;
+  const hasPriority = (i, j) => comparator(data[i], data[j]) < 0;
 
   /**
    * Swap 2 elements at index i and j, assuming i and j are valid. O(1)
@@ -101,7 +97,7 @@ export function BinaryHeap(comparator = compare()) {
 
     // Keeps bubbling up if we haven't reached the top or the current node
     // still has higher priority than its parent node
-    while (parentInd >= 0 && !hasPriority(parentInd, index)) {
+    while (parentInd >= 0 && hasPriority(index, parentInd)) {
       swap(index, parentInd);
       index = parentInd;
       parentInd = getParentIndex(index);
@@ -122,7 +118,7 @@ export function BinaryHeap(comparator = compare()) {
       // if right & left indexes are both valid, then get the one with higher priority,
       // otherwise, pick leftInd (because rightInd at this point is invalid)
       let vip = leftInd;
-      if (rightInd < this.size() && !hasPriority(leftInd, rightInd))
+      if (rightInd < this.size() && hasPriority(rightInd, leftInd))
         vip = rightInd;
 
       // if current node has higher priority than the chosen node then we're done
@@ -134,6 +130,9 @@ export function BinaryHeap(comparator = compare()) {
   };
 
   //----------------------------- PUBLIC METHODS -------------------------------
+  this.size = () => data.length;
+  this.isEmpty = () => this.size() === 0;
+  this.clear = () => (data = []); // O(1)
 
   /**
    * Remove an element at a particular index. O(log(n))
@@ -243,8 +242,8 @@ export function BinaryHeap(comparator = compare()) {
     const leftInd = getLeftChildIndex(index);
     const rightInd = getRightChildIndex(index);
 
-    if (leftInd < heapSize && !hasPriority(index, leftInd)) return false;
-    if (rightInd < heapSize && !hasPriority(index, rightInd)) return false;
+    if (leftInd < heapSize && hasPriority(leftInd, index)) return false;
+    if (rightInd < heapSize && hasPriority(rightInd, index)) return false;
 
     return this.isValidHeap(leftInd) && this.isValidHeap(rightInd);
   };
@@ -257,17 +256,17 @@ export function BinaryHeap(comparator = compare()) {
 }
 
 /**
- * Indexed Priority Queue (IPQ) implementation using a D-ary heap which PQ to have quick
+ * Indexed Priority Queue (IPQ) implementation using a D-ary heap which help PQ have quick
  * updates and removals. The higher degree D is, the faster it takes to update, but it also takes
  * more operations to remove/delete a key-value pair.
  * 
  * Example of how a min IPQ works:
  *  - names = ['anna', 'bella', 'carly'], ages = [23, 12, 15] (anna is 23, bella is 12, carly is 15)
  *  - for i, names[i] related to ages[i] => i is the key index
- *  - We only insert ages IPQ. Age is used to determine priority. The ages array remains unchanged for the whole computation.
- *  - The IPQ has an array pm that stores the ages' indexes with priority.
- *  - In normal PQ, the underlying array stores the actual value and the first element in this array has the highest priority.
- *  - However, in IPQ, the first element is the index of the value that has the highest priority.
+ *  - We only insert ages into IPQ. Age is used to determine priority. The indexes of ages will be used to refer back to names array.
+ *  - The IPQ has an array pm (position Map) that stores the ages' indexes with priority.
+ *  - In normal PQ, the underlying array stores the actual value and arr[0] is the element with the highest priority.
+ *  - However, in IPQ, pm[0] is the index of the value that has the highest priority.
  *  - In this example, ipq.poll() returns 1
  *  - names[1] is 'bella' which has the lowest age 12 - ages[1]. 
  * 
@@ -304,7 +303,7 @@ export function IndexedDHeap(deg, size, comparator = compare()) {
   };
 
   const validateValue = value => {
-    if (value == null) throw new Error('Invalid Value');
+    if (value == null || value === '') throw new Error('Invalid Value');
   };
 
   const doesKeyIndexExist = ki => {
@@ -316,9 +315,9 @@ export function IndexedDHeap(deg, size, comparator = compare()) {
   const swap = (i, j) => {
     pm[im[j]] = i;
     pm[im[i]] = j;
-    const tmp = im[i];
+    const temp = im[i];
     im[i] = im[j];
-    im[j] = tmp;
+    im[j] = temp;
   };
 
   /**
@@ -331,7 +330,7 @@ export function IndexedDHeap(deg, size, comparator = compare()) {
 
     for (let j = child[i]; j < upperBound; j++)
       if (hasPriority(j, i)) index = i = j;
-      
+
     return index;
   };
 
@@ -339,7 +338,7 @@ export function IndexedDHeap(deg, size, comparator = compare()) {
    * Sift the element down the heap if it has lower priority than its children
    */
   const sink = i => {
-    for (let j = getChild(i); j != -1; j = getChild(i)) {
+    for (let j = getChild(i); j !== -1; j = getChild(i)) {
       swap(i, j);
       i = j;
     }
@@ -355,6 +354,28 @@ export function IndexedDHeap(deg, size, comparator = compare()) {
     }
   };
 
+  /**
+   * Replace/update value of a key index when applied
+   */
+  const replace = (ki, value, condition) => {
+    doesKeyIndexExist(ki);
+    validateValue(value);
+
+    if (
+      !condition ||
+      (condition === 'decrease' && comparator(value, data[ki]) < 0) ||
+      (condition === 'increase' && comparator(value, data[ki]) > 0)
+    ) {
+      const i = pm[ki];
+      const oldValue = data[ki];
+      data[ki] = value;
+      sink(i);
+      swim(i);
+  
+      return oldValue;
+    }
+  };
+
   //------------------------- PUBLIC METHODS --------------------------
   this.size = () => curSize;
   this.isEmpty = () => curSize === 0;
@@ -363,35 +384,17 @@ export function IndexedDHeap(deg, size, comparator = compare()) {
     return pm[ki] !== -1;
   };
 
+  this.valueOf = ki => this.contains(ki) ? data[ki] : null;
+
   /**
    * Get the key index of the key-value pair with the highest priority
    */
   this.peakKeyIndex = () => this.isEmpty() ? null : im[0];
 
   /**
-   * Delete the key-value pair with the highest priority
-   */
-  this.pollKeyIndex = () => {
-    const ki = this.peakKeyIndex();
-    if (ki != null) this.delete(ki);
-    return ki; 
-  };
-
-  /**
    * Get the value of the key-value pair with the highest priority
    */
   this.peakValue = () => this.isEmpty() ? null : data[im[0]];
-
-  /**
-   * Delete the key-value pair with the highest priority
-   */
-  this.pollValue = () => {
-    const value = this.peakValue();
-    this.pollKeyIndex();
-    return value;
-  };
-  
-  this.valueOf = ki => this.contains(ki) ? data[ki] : null;
 
   /**
    * Insert a new key-value pair, doesn't accept duplicate key index
@@ -426,49 +429,41 @@ export function IndexedDHeap(deg, size, comparator = compare()) {
   };
 
   /**
+   * Delete the key-value pair with the highest priority
+   */
+  this.pollKeyIndex = () => {
+    const ki = this.peakKeyIndex();
+    if (ki != null) this.delete(ki);
+    return ki; 
+  };
+
+  /**
+   * Delete the key-value pair with the highest priority
+   */
+  this.pollValue = () => {
+    const value = this.peakValue();
+    this.pollKeyIndex();
+    return value;
+  };
+
+  /**
    * Update the value of the Key index to the new value
    */
-  this.update = (ki, value) => {
-    doesKeyIndexExist(ki);
-    validateValue(value);
-
-    const i = pm[ki];
-    const oldValue = data[ki];
-    data[ki] = value;
-    sink(i);
-    swim(i);
-
-    return oldValue;
-  };
+  this.update = (ki, value) => replace(ki, value);
 
   /**
    * Strictly increases the value associated with 'ki' to 'value'
    */
-  this.increase = (ki, value) => {
-    doesKeyIndexExist(ki);
-    validateValue(value);
-
-    if (comparator(value, data[ki]) > 0) {
-      data[ki] = value;
-      swim(pm[ki]);
-      sink(pm[ki]);
-    }
-  };
+  this.decrease = (ki, value) => replace(ki, value, 'decrease');
 
   /**
    * Strictly decreases the value associated with 'ki' to 'value'
    */
-  this.decrease = (ki, value) => {
-    doesKeyIndexExist(ki);
-    validateValue(value);
+  this.increase = (ki, value) => replace(ki, value, 'increase');
 
-    if (comparator(value, data[ki]) < 0) {
-      data[ki] = value;
-      swim(pm[ki]);
-      sink(pm[ki]);
-    }
-  };
-
+  /**
+   * Validate if this heap satisfies the heap invariant
+   */
   this.isValidHeap = (i = 0) => {
     const upperBound = Math.min(curSize, child[i] + degree);
     for (let j = child[i]; j < upperBound; j++) {
