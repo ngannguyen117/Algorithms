@@ -80,7 +80,7 @@ const initializeScheme = scheme => {
       };
       break;
     case OpenAddressingScheme.QUADRATIC_PROBING:
-      probe = x => x * x + x >> 1;
+      probe = x => (x * x + x) >> 1;
       increaseCapacity = capacity => 1 << (32 - Math.clz32(capacity)); // get the next power of 2
       adjustCapacity = capacity => {
         const currentPowerOf2 = 1 << (31 - Math.clz32(capacity));
@@ -111,8 +111,8 @@ const initializeScheme = scheme => {
  */
 function HashTableOpenAddressing (cap, loadFactor, scheme) {
   // Validate capacity and loadFactor
-  if (cap < 0) throw new Error('Illegal capacity');
-  if (loadFactor <= 0 || loadFactor > 1) throw new Error('Illegal load factor');
+  if (cap < 0) throw new Error('Invalid capacity');
+  if (loadFactor <= 0 || loadFactor > 1) throw new Error('Invalid load factor');
 
   // initialize local variables & methods
   const { probe, setProbe, increaseCapacity, adjustCapacity } = initializeScheme(scheme);
@@ -120,6 +120,7 @@ function HashTableOpenAddressing (cap, loadFactor, scheme) {
   let arr, size, threshold, capacity, modificationCount, usedSlots;
   const initializeTable = () => {
     capacity = cap ? Math.max(DEFAULT_CAPACITY, cap) : DEFAULT_CAPACITY;
+    capacity = adjustCapacity(capacity);
     threshold = Math.floor(capacity * maxLoadFactor);
     arr = [];
     size = 0;
@@ -129,8 +130,8 @@ function HashTableOpenAddressing (cap, loadFactor, scheme) {
   initializeTable();
 
   //---------------------------- HELPER METHODS -----------------------------
-  const isInvalidKey = key => key == null || key === '';
   const index = hash => (hash & 0x7fffffff) % capacity;
+  const isInvalidKey = key => key == null || key === '';
 
   const seekEntry = key => {
     if (isInvalidKey(key)) return null;
@@ -139,7 +140,7 @@ function HashTableOpenAddressing (cap, loadFactor, scheme) {
     const offset = index(hashCode(key));
 
     for (let i = offset, j = -1, x = 1; arr[i]; i = index(offset + probe(x++))) {
-      if (arr[i].key === TOMBSTONE)  j = j === -1 ? i : j; // record the first deleted cell index to perform lazy relocation
+      if (arr[i].key === TOMBSTONE) j = j === -1 ? i : j; // record the first deleted cell index to perform lazy relocation
       else if (arr[i].key === key) {
         if (j === -1) return arr[i];
 
@@ -209,11 +210,12 @@ function HashTableOpenAddressing (cap, loadFactor, scheme) {
     if (isInvalidKey(key)) throw new Error('Invalid Key');
     if (usedSlots >= threshold) resizeTable();
 
+    modificationCount++;
     setProbe(key, index);
-    const newEntry = new Entry(key, value)
+    const newEntry = new Entry(key, value);
     const offset = index(newEntry.hash);
 
-    for (let i = offset, x = 1, j = -1; ; i = index(offset + probe(x++))) {
+    for (let i = offset, j = -1, x = 1; ; i = index(offset + probe(x++))) {
       // found an empty spot, insert new entry
       if (!arr[i]) {
         if (j === -1) {
@@ -222,7 +224,6 @@ function HashTableOpenAddressing (cap, loadFactor, scheme) {
         } else arr[j] = newEntry;
 
         size++;
-        modificationCount++;
         return null;
       }
 
@@ -233,12 +234,10 @@ function HashTableOpenAddressing (cap, loadFactor, scheme) {
 
         arr[i].value = value;
         if (j !== -1) {
-          const temp = arr[j];
           arr[j] = arr[i];
-          arr[i] = temp;
+          arr[i] = new Entry(TOMBSTONE);
         }
 
-        modificationCount++;
         return oldValue;
       }
     }
@@ -250,14 +249,14 @@ function HashTableOpenAddressing (cap, loadFactor, scheme) {
   this.keys = () => {
     const keys = [];
     for (let entry of arr)
-       if (entry && entry.key !== TOMBSTONE) keys.push(entry.key);
+      if (entry && entry.key !== TOMBSTONE) keys.push(entry.key);
     return keys;
   };
 
   this.values = () => {
     const values = [];
     for (let entry of arr)
-       if (entry && entry.key !== TOMBSTONE) values.push(entry.value);
+      if (entry && entry.key !== TOMBSTONE) values.push(entry.value);
     return values;
   };
 
@@ -292,7 +291,6 @@ export function HashTableDoubleHashing (cap, loadFactor) {
   HashTableOpenAddressing.call(this, cap, loadFactor, OpenAddressingScheme.DOUBLE_HASHING);
 }
 
-
 /**
  * Hash Table implementation using Separate Chaining
  * @param {number} cap initial capacity
@@ -300,8 +298,8 @@ export function HashTableDoubleHashing (cap, loadFactor) {
  */
 export function HashTableSeparateChaining (cap, loadFactor) {
   // Validate capacity and loadFactor values, if provided
-  if (cap < 0) throw new Error('Illegal capacity');
-  if (loadFactor <= 0 || loadFactor > 1) throw new Error('Illegal load factor');
+  if (cap < 0) throw new Error('Invalid capacity');
+  if (loadFactor <= 0 || loadFactor > 1) throw new Error('Invalid load factor');
 
   //----------------------- Define local variables -----------------------------
   const maxLoadFactor = loadFactor ? loadFactor : DEFAULT_LOAD_FACTOR;
@@ -310,7 +308,7 @@ export function HashTableSeparateChaining (cap, loadFactor) {
     capacity = cap ? Math.max(cap, DEFAULT_CAPACITY) : DEFAULT_CAPACITY;
     threshold = Math.floor(capacity * maxLoadFactor);
     size = 0;
-    arr = [...Array(capacity)]; // LinkedList[]
+    arr = []; // LinkedList[]
     modificationCount = 0;
   };
   initializeTable();
@@ -327,11 +325,11 @@ export function HashTableSeparateChaining (cap, loadFactor) {
    */
   const seekEntry = (key, ind = null) => {
     if (!isInvalidKey(key)) {
-      if (!ind) ind = index(hashCode(key));
+      if (ind == null) ind = index(hashCode(key));
 
       const list = arr[ind];
-      if (!list) return null;
-      for (let entry of list) if (entry.key === key) return entry;
+      if (list) for (let entry of list)
+        if (entry.key === key) return entry;
     }
 
     return null;
@@ -343,7 +341,7 @@ export function HashTableSeparateChaining (cap, loadFactor) {
   const resizeTable = () => {
     capacity *= 2;
     threshold = Math.floor(capacity * maxLoadFactor);
-    let newArr = [...Array(capacity)];
+    let newArr = [];
 
     for (let i = 0; i < arr.length; i++)
       if (arr[i]) {
@@ -365,7 +363,7 @@ export function HashTableSeparateChaining (cap, loadFactor) {
   this.size = () => size;
   this.isEmpty = () => size === 0;
 
-  this.hasKey = key => seekEntry(key) !== null;
+  this.hasKey = key => seekEntry(key) != null;
   this.contains = key => this.hasKey(key);
 
   this.clear = initializeTable;
@@ -414,7 +412,7 @@ export function HashTableSeparateChaining (cap, loadFactor) {
     const existingEntry = seekEntry(key, ind);
     if (existingEntry) {
       const oldValue = existingEntry.value;
-      existingEntry.value = newEntry.value;
+      existingEntry.value = value;
       return oldValue;
     }
 

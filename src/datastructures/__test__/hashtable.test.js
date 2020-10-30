@@ -21,10 +21,10 @@ const testHashTable = (HashTable, subtitle) => {
       });
 
       test('Illegal hash table creation', () => {
-        expect(() => new HashTable(-4)).toThrow('Illegal capacity');
-        expect(() => new HashTable(3, Infinity)).toThrow('Illegal load factor');
-        expect(() => new HashTable(3, 0)).toThrow('Illegal load factor');
-        expect(() => new HashTable(3, -10)).toThrow('Illegal load factor');
+        expect(() => new HashTable(-4)).toThrow('Invalid capacity');
+        expect(() => new HashTable(3, Infinity)).toThrow('Invalid load factor');
+        expect(() => new HashTable(3, 0)).toThrow('Invalid load factor');
+        expect(() => new HashTable(3, -10)).toThrow('Invalid load factor');
       });
     });
 
