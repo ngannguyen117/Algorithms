@@ -76,11 +76,13 @@ export function FenwickTree (values) {
    */
   const prefixSum = i => {
     let total = 0;
-    for (; i; i &= ~lsb(i)) total += tree[i]; // Equivalently, i -= lsb(i);
+    for (; i; i -= lsb(i)) total += tree[i]; // Equivalently, i &= ~lsb(i);
     return total;
   };
 
-  const isInvalidIndex = index => index < 1 || index >= size;
+  const validateIndex = i => {
+    if (i < 1 || i >= size) throw new Error('Index out of range');
+  };
 
   //---------------------- Initialize local variables ----------------------
   let tree, size;
@@ -95,32 +97,29 @@ export function FenwickTree (values) {
     }
   } else {
     size = values + 1;
-    tree = [];
-    for (let i = 0; i < size; i++) tree.push(0);
+    tree = [...Array(size)].fill(0);
   }
-
 
   //---------------------------- PUBLIC METHODS ----------------------------
   this.sum = (leftInd, rightInd) => {
     if (rightInd < leftInd) throw new Error('Make sure right index >= left Index');
-    if (isInvalidIndex(leftInd) || isInvalidIndex(rightInd)) throw new Error('Index out of range');
+    validateIndex(leftInd);
+    validateIndex(rightInd);
+
     return prefixSum(rightInd) - prefixSum(leftInd - 1);
   };
 
-  this.get = index => {
-    if (isInvalidIndex(index)) throw new Error('Index out of range');
-    return this.sum(index, index);
+  this.get = i => {
+    validateIndex(i);
+    return this.sum(i, i);
   };
 
-  this.add = (index, value) => {
-    if (isInvalidIndex(index)) throw new Error('Index out of range');
-    for (; index < size; index += lsb(index)) tree[index] += value;
+  this.add = (i, value) => {
+    validateIndex(i)
+    for (; i < size; i += lsb(i)) tree[i] += value;
   };
 
-  this.set = (index, value) => {
-    if (isInvalidIndex(index)) throw new Error('Index out of range');
-    this.add(index, value - this.get(index));
-  };
+  this.set = (i, value) => this.add(i, value - this.get(i));
 
   this.toString = () => tree.join(' ');
 }
