@@ -109,13 +109,10 @@ export function FenwickTree (values) {
     return prefixSum(rightInd) - prefixSum(leftInd - 1);
   };
 
-  this.get = i => {
-    validateIndex(i);
-    return this.sum(i, i);
-  };
+  this.get = i => this.sum(i, i);
 
   this.add = (i, value) => {
-    validateIndex(i)
+    validateIndex(i);
     for (; i < size; i += lsb(i)) tree[i] += value;
   };
 
