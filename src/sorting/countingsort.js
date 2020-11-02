@@ -12,21 +12,16 @@ export const countingSort = (array) => {
   if (!array) return;
 
   // find max and min values of the array
-  let maxValue = Number.NEGATIVE_INFINITY;
-  let minValue = Number.POSITIVE_INFINITY;
-  for (let i = 0; i < array.length; i++) {
-    if (array[i] < minValue) minValue = array[i];
-    if (array[i] > maxValue) maxValue = array[i];
-  }
+  const min = Math.min.apply(null, array);
+  const max = Math.max.apply(null, array);
 
-  if (maxValue === minValue) return array;
+  if (max === min) return array;
 
-  const size = maxValue - minValue + 1;
-  const frequency = [];
-  for (let i = 0; i < size; i++) frequency.push(0);
+  const size = max - min + 1;
+  const frequency = Array(size).fill(0);
 
   // Track the frequency of each element
-  for (let v of array) frequency[v - minValue]++;
+  for (let v of array) frequency[v - min]++;
 
   // find the end index for each element
   for (let i = 1; i < size; i++) frequency[i] += frequency[i - 1];
@@ -35,7 +30,7 @@ export const countingSort = (array) => {
   // start from last element of the original array
   const sortedArray = [];
   for (let i = array.length - 1; i >= 0; i--)
-    sortedArray[frequency[array[i] - minValue]-- - 1] = array[i];
+    sortedArray[frequency[array[i] - min]-- - 1] = array[i];
 
   return sortedArray;
 };
