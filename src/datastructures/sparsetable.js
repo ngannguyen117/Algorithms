@@ -37,7 +37,7 @@ export const Operation = Object.freeze({
 export function SparseTable (values, operation) {
   // Validate parameters
   if (!values || !operation) throw new Error('Requires an array of values and operation type');
-  if (!Array.isArray(values) || values.length <= 0) throw new Error('Invalid values input');
+  if (!Array.isArray(values) || values.length < 1) throw new Error('Invalid values input');
 
   //--------------------- Operation Function Declaration ----------------------
   const gcd = (a, b) => {
@@ -52,7 +52,7 @@ export function SparseTable (values, operation) {
   const log2 = [0, 0]; // Fast log base 2 logarithm lookup table for i, 1 <= i <= n
 
   for (let i = 2; i <= size; i++) log2[i] = Math.floor(Math.log2(i));
-  for (let i = 0; i <= log2[size]; i++) {
+  for (let p = 0; p <= log2[size]; p++) {
     sparseTable.push([]);
     indexTable.push([]);
   }
@@ -63,29 +63,29 @@ export function SparseTable (values, operation) {
   }
 
   // build sparse table
-  for (let i = 1; i <= log2[size]; i++)
-    for (let j = 0; j + (1 << i) <= size; j++) {
-      const leftValue = sparseTable[i - 1][j];
-      const rightValue = sparseTable[i - 1][j + (1 << (i - 1))];
+  for (let p = 1; p <= log2[size]; p++)
+    for (let i = 0; i + (1 << p) <= size; i++) {
+      const leftValue = sparseTable[p - 1][i];
+      const rightValue = sparseTable[p - 1][i + (1 << (p - 1))];
 
       switch (operation) {
         case Operation.MIN:
-          sparseTable[i][j] = Math.min(leftValue, rightValue);
+          sparseTable[p][i] = Math.min(leftValue, rightValue);
           // propagate index of the best value
-          indexTable[i][j] = indexTable[i - 1][j];
-          if (rightValue < leftValue) indexTable[i][j] = indexTable[i - 1][j + (1 << (i - 1))];
+          indexTable[p][i] = indexTable[p - 1][i];
+          if (rightValue < leftValue) indexTable[p][i] = indexTable[p - 1][i + (1 << (p - 1))];
           break;
         case Operation.MAX:
-          sparseTable[i][j] = Math.max(leftValue, rightValue);
+          sparseTable[p][i] = Math.max(leftValue, rightValue);
           // propagate index of the best value
-          indexTable[i][j] = indexTable[i - 1][j];
-          if (rightValue > leftValue) indexTable[i][j] = indexTable[i - 1][j + (1 << (i - 1))];
+          indexTable[p][i] = indexTable[p - 1][i];
+          if (rightValue > leftValue) indexTable[p][i] = indexTable[p - 1][i + (1 << (p - 1))];
           break;
         case Operation.MULT:
-          sparseTable[i][j] = leftValue * rightValue;
+          sparseTable[p][i] = leftValue * rightValue;
           break;
         case Operation.GCD:
-          sparseTable[i][j] = gcd(leftValue, rightValue);
+          sparseTable[p][i] = gcd(leftValue, rightValue);
           break;
       }
     }
