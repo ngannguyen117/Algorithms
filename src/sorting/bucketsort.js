@@ -12,21 +12,17 @@ import { SinglyLinkedList } from '../datastructures/linkedList';
 export const bucketSort = array => {
   if (!array) return;
 
-  let minValue = Number.POSITIVE_INFINITY;
-  let maxValue = Number.NEGATIVE_INFINITY;
-  for (let i = 0; i < array.length; i++) {
-    if (array[i] < minValue) minValue = array[i];
-    if (array[i] > maxValue) maxValue = array[i];
-  }
+  const min = Math.min.apply(null, array);
+  const max = Math.max.apply(null, array);
 
-  if (maxValue === minValue) return;
+  if (max === min) return;
 
-  const numBuckets = Math.ceil(Math.sqrt(maxValue - minValue + 1));
+  const numBuckets = Math.ceil(Math.sqrt(max - min + 1));
   const buckets = [];
 
   // Place elements in to a bucket
   for (let i = 0; i < array.length; i++) {
-    const ind = Math.floor((array[i] - minValue) / numBuckets);
+    const ind = Math.floor((array[i] - min) / numBuckets);
     if (!buckets[ind]) buckets[ind] = new SinglyLinkedList();
     buckets[ind].add(array[i]);
   }
