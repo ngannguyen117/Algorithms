@@ -22,7 +22,7 @@ export const radixSort = array => {
 
     const sortedArray = [];
     for (let i = array.length - 1; i >= 0; i--)
-      sortedArray[frequency[index(i)]-- - 1] = array[i];
+      sortedArray[--frequency[index(i)]] = array[i];
 
     array = sortedArray;
   };

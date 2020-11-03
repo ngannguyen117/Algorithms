@@ -30,7 +30,7 @@ export const countingSort = (array) => {
   // start from last element of the original array
   const sortedArray = [];
   for (let i = array.length - 1; i >= 0; i--)
-    sortedArray[frequency[array[i] - min]-- - 1] = array[i];
+    sortedArray[--frequency[array[i] - min]] = array[i];
 
   return sortedArray;
 };
