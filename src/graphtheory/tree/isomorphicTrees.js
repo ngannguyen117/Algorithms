@@ -60,85 +60,52 @@ const withBfs = (tree1, tree2) => {
    * @returns {string}
    */
   const encode = tree => {
-    const size = tree.size;
-    const rootId = treeCenter(tree)[0];
-
+    // record each node's degree and find leaf nodes
     const degree = [];
-    const parent = [];
-    const visited = [];
-    for (let i = 0; i < size; i++) {
-      degree.push(0);
-      parent.push(-1);
-      visited.push(false);
-    }
-
     let leaves = [];
-    const queue = new Queue(rootId);
-    visited[rootId] = true;
-
-    // Do a BFS to find leaves nodes
-    while (!queue.isEmpty()) {
-      const at = queue.dequeue();
-      const edges = tree.get(at);
-      degree[at] = edges.length;
-
-      for (let edge of edges)
-        if (!visited[edge.to]) {
-          visited[edge.to] = true;
-          parent[edge.to] = at;
-          queue.enqueue(edge.to);
-        }
-
-      if (degree[at] === 1) leaves.push(at);
+    for (let i = 0; i < tree.size; i++) {
+      degree[i] = tree.get(i).length;
+      if (degree[i] <= 1) {
+        leaves.push(i);
+        degree[i] = 0;
+      }
     }
 
-    let newLeaves = [];
-    const map = [];
-    for (let i = 0; i < size; i++) {
-      visited[i] = false;
-      map[i] = '()';
-    }
+    const map = Array(tree.size).fill('()');
+    let processedLeaves = leaves.length;
 
-    let treeSize = size;
-    while (treeSize > 2) {
-      for (let leaf of leaves) {
-        // Find parent of leaf node and check if the parent
-        // is a candidate for the next cycle of leaf nodes
-        visited[leaf] = true;
-        let p = parent[leaf];
-        if (--degree[p] === 1) newLeaves.push(p);
-        treeSize--;
+    while (processedLeaves < tree.size) {
+      const newLeaves = [];
+      for (let leafId of leaves) {
+        for (let edge of tree.get(leafId))
+          if (--degree[edge.to] === 1) newLeaves.push(edge.to);
+        degree[leafId] = 0;
       }
 
       // Update parent labels
       for (let p of newLeaves) {
         let labels = [];
         for (let edge of tree.get(p))
-          if (visited[edge.to]) labels.push(map[edge.to]);
-      
-        const innerParentheses = map[p].slice(1, map[p].length - 1);
-        labels.push(innerParentheses);
+          if (degree[edge.to] === 0) labels.push(map[edge.to]);
+
         labels = mergeSort(labels);
-        map[p] = '('.concat(labels.join('')).concat(')');
+        map[p] = `(${labels.join('')})`;
       }
 
+      processedLeaves += newLeaves.length;
       leaves = newLeaves;
-      newLeaves = [];
     }
 
     // Only one vertex remains and it holds the canonical form
     const l1 = map[leaves[0]];
-    if (treeSize === 1) return l1;
+    if (leaves.length === 1) return l1;
 
     // there are 2 vertices remain, combine 2 labels
     const l2 = map[leaves[1]];
     return l1 < l2 ? l1.concat(l2) : l2.concat(l1);
   };
 
-  // use function encode to encode 2 trees and then compare their encodings
-  const encoding1 = encode(tree1);
-  const encoding2 = encode(tree2);
-  return encoding1 === encoding2;
+  return encode(tree1) === encode(tree2);
 };
 
 /**
