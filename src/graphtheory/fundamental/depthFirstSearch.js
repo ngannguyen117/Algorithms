@@ -55,8 +55,7 @@ export const Type = Object.freeze({
  * @returns {number} the number of nodes traversed
  */
 export const dfs = (graph, start, numNodes, type) => {
-  const visited = [];
-  for (let i = 0; i < numNodes; i++) visited[i] = false;
+  const visited = Array(numNodes).fill(false);
 
   switch (type) {
     case Type.RECURSIVE:
@@ -75,22 +74,20 @@ export const dfs = (graph, start, numNodes, type) => {
 
       return dfsRecursive(start);
     case Type.ITERATIVE:
-      let count = 0;
-      const stack = new ArrayStack();
-
       // Start by visiting the starting vertex
-      stack.push(start);
+      let count = 1;
+      const stack = new ArrayStack(start);
       visited[start] = true;
 
       while (!stack.isEmpty()) {
         const node = stack.pop();
-        count++;
 
         const edges = graph.get(node);
         if (edges) for (let edge of edges)
           if (!visited[edge.to]) {
             stack.push(edge.to);
             visited[edge.to] = true;
+            count++;
           }
       }
 
