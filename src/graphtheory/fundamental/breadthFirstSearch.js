@@ -19,15 +19,10 @@ import { Queue } from '../../datastructures/queue';
  * Perform a bfs on the graph from a start node to find the previous node of each node.
  */
 const bfs = (graph, size, start) => {
-  const visited = [];
-  const prev = [];
-  for (let i = 0; i < size; i++) {
-    visited.push(false);
-    prev.push(-1);
-  }
-  visited[start] = true;
-
+  const visited = Array(size).fill(false);
+  const prev = Array(size).fill(-1);
   const queue = new Queue(start);
+  visited[start] = true;
 
   while (!queue.isEmpty()) {
     const at = queue.dequeue();
