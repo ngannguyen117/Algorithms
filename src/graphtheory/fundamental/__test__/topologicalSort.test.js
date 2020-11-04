@@ -42,4 +42,4 @@ const testTopSort = method => {
 };
 
 testTopSort(Method.DFS);
-testTopSort(Method.KAHN);
+testTopSort(Method.KAHNS);

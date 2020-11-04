@@ -39,7 +39,7 @@ const dfs = (graph, numVertices) => {
   };
   
   const ordering = [];
-  const visited = [...Array(numVertices)].fill(false);
+  const visited = Array(numVertices).fill(false);
   
   let orderingIndex = numVertices - 1;
   for (let at = 0; at < numVertices; at++)
@@ -49,7 +49,7 @@ const dfs = (graph, numVertices) => {
 };
 
 const kahn = (graph, numVertices) => {
-  const inDegree = [...Array(numVertices)].fill(0);
+  const inDegree = Array(numVertices).fill(0);
   for (let i = 0; i < numVertices; i++) {
     const edges = graph.get(i);
     if (edges) for (let edge of edges)
@@ -59,12 +59,11 @@ const kahn = (graph, numVertices) => {
   const queue = new Queue();
   for (let i = 0; i < numVertices; i++)
     if (inDegree[i] === 0) queue.enqueue(i);
-  
-  let index = 0;
+
   const ordering = [];
   while (!queue.isEmpty()) {
     const at = queue.dequeue();
-    ordering[index++] = at;
+    ordering.push(at);
 
     const edges = graph.get(at);
     if (edges) for (let edge of edges) {
