@@ -17,7 +17,7 @@ export const radixSort = array => {
     const range = 10;
     const frequency = Array(range).fill(0);
 
-    for (let i = 0; i < range; i++) frequency[index(i)]++;
+    for (let i = 0; i < array.length; i++) frequency[index(i)]++;
     for (let i = 1; i < range; i++) frequency[i] += frequency[i - 1];
 
     const sortedArray = [];
