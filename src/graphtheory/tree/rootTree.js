@@ -8,17 +8,15 @@ import { TreeNode } from '../../utils/tree';
  * @returns {TreeNode} the root Node of the rooted tree
  */
 export const rootTree = (graph, rootId) => {
-  const root = new TreeNode(rootId);
-
   const buildTree = node => {
     for (let edge of graph.get(node.id())) {
       if (node.parent() && edge.to === node.parent().id()) continue;
-      const child = new TreeNode(edge.to, node);
+      const child = buildTree(new TreeNode(edge.to, node));
       node.addChildren(child);
-      buildTree(child);
     }
+
     return node;
   };
 
-  return buildTree(root);
+  return buildTree(new TreeNode(rootId));
 };
