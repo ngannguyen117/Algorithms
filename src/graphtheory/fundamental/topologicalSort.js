@@ -23,7 +23,7 @@ import { Queue } from '../../datastructures/queue';
 
 export const Method = Object.freeze({
   DFS: 'Depth First Search',
-  KAHN: 'Kahn Algorithm',
+  KAHNS: 'Kahn Algorithm',
 });
 
 const dfs = (graph, numVertices) => {
@@ -48,7 +48,7 @@ const dfs = (graph, numVertices) => {
   return ordering;
 };
 
-const kahn = (graph, numVertices) => {
+const kahns = (graph, numVertices) => {
   const inDegree = Array(numVertices).fill(0);
   for (let i = 0; i < numVertices; i++) {
     const edges = graph.get(i);
@@ -85,8 +85,8 @@ export const topSort = (graph, numVertices, method) => {
   switch (method) {
     case Method.DFS:
       return dfs(graph, numVertices);
-    case Method.KAHN:
+    case Method.KAHNS:
     default:
-      return kahn(graph, numVertices);
+      return kahns(graph, numVertices);
   }
 };
