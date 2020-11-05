@@ -1,4 +1,5 @@
 import { Queue } from '../../datastructures/queue';
+
 /**
  * You are trapped in a 2D dungeon and need to find the quickest way out!
  * The dungeon is composed of unit cubes which may or may not be filled with rock.
@@ -22,19 +23,22 @@ export const dungeonMaster = (grid, startRow, startCol) => {
   const colQueue = new Queue(startCol);
 
   // variables to track number of steps taken
-  let moveCount = 0;
+  let steps = 0;
   let nodesLeftInLayer = 1;
   let nodesInNextLayer = 0;
-  let reachEnd = false;
 
   // a numRows x numCols matrix to check if a node is visited
   const visited = [];
-  const rowVisited = [];
-  for (let i = 0; i < numCols; i++) rowVisited.push(false);
+  const rowVisited = Array(numCols).fill(false);
   for (let i = 0; i < numRows; i++) visited.push([...rowVisited]);
   visited[startRow][startCol] = true;
 
-  const exploreNeighbors = (row, col) => {
+  while (!rowQueue.isEmpty()) {
+    const row = rowQueue.dequeue();
+    const col = colQueue.dequeue();
+
+    if (grid[row][col] === 'E') return steps;
+
     for (let i = 0; i < 4; i++) {
       const rr = rowDirection[i] + row;
       const cc = colDirection[i] + col;
@@ -49,25 +53,14 @@ export const dungeonMaster = (grid, startRow, startCol) => {
       colQueue.enqueue(cc);
       nodesInNextLayer++;
     }
-  };
 
-  while (!rowQueue.isEmpty()) {
-    const row = rowQueue.dequeue();
-    const col = colQueue.dequeue();
-
-    if (grid[row][col] === 'E') {
-      reachEnd = true;
-      break;
-    }
-
-    exploreNeighbors(row, col);
     nodesLeftInLayer--;
-    if (nodesLeftInLayer === 0) {
+    if (nodesLeftInLayer === 0 && nodesInNextLayer) {
       nodesLeftInLayer = nodesInNextLayer;
       nodesInNextLayer = 0;
-      moveCount++;
+      steps++;
     }
   }
 
-  return reachEnd ? moveCount : -1;
+  return -1;
 };
