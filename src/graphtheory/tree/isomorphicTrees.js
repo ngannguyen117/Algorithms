@@ -65,10 +65,7 @@ const withBfs = (tree1, tree2) => {
     let leaves = [];
     for (let i = 0; i < tree.size; i++) {
       degree[i] = tree.get(i).length;
-      if (degree[i] <= 1) {
-        leaves.push(i);
-        degree[i] = 0;
-      }
+      if (degree[i] <= 1) leaves.push(i);
     }
 
     const map = Array(tree.size).fill('()');

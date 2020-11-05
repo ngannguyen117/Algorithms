@@ -14,10 +14,7 @@ const peelOnion = graph => {
   let leaves = [];
   for (let i = 0; i < graph.size; i++) {
     degree[i] = graph.get(i).length;
-    if (degree[i] <= 1) {
-      leaves.push(i);
-      degree[i] = 0;
-    }
+    if (degree[i] <= 1) leaves.push(i);
   }
 
   let processedLeaves = leaves.length;
