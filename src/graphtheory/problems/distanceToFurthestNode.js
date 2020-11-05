@@ -9,19 +9,19 @@ import { Queue } from '../../datastructures/queue';
  * @returns {number} the distance
  */
 export const computeDistanceToFurthestNode = (graph, size, startNode) => {
-  const visited = [...Array(size)].fill(false);
+  const visited = Array(size).fill(false);
   visited[startNode] = true;
 
-  let distance = -1;
+  let steps = 0;
   let nodesLeftInLayer = 1;
   let nodesInNextLayer = 0;
   const queue = new Queue(startNode);
 
   while (!queue.isEmpty()) {
     const at = queue.dequeue();
-    const neighbors = graph.get(at);
 
-    if (neighbors) for (let edge of neighbors)
+    const edges = graph.get(at);
+    if (edges) for (let edge of edges)
       if (!visited[edge.to]) {
         visited[edge.to] = true;
         queue.enqueue(edge.to);
@@ -29,12 +29,12 @@ export const computeDistanceToFurthestNode = (graph, size, startNode) => {
       }
 
     nodesLeftInLayer--;
-    if (nodesLeftInLayer === 0) {
-      distance++;
+    if (nodesLeftInLayer === 0 && nodesInNextLayer) {
+      steps++;
       nodesLeftInLayer = nodesInNextLayer;
       nodesInNextLayer = 0;
     }
   }
 
-  return distance;
+  return steps;
 };
