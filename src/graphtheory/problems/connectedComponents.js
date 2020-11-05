@@ -5,13 +5,12 @@ import { Edge } from '../../utils/graph';
 /**
  * Find connected components of an undirected graph using Depth First Search algorithm
  * @param {Map<number, Edge[]} graph an adjaciency list representation of a graph
- * @param {number} size number of vertices in the graph
+ * @param {number} numVertices number of vertices in the graph
  * @returns {{components: number[], count: number}} components list and number of components
  */
-export const findCCsDFS = (graph, size) => {
+export const findCCsDFS = (graph, numVertices) => {
   let count = 0;
-  const components = [];
-  for (let i = 0; i < size; i++) components.push(-1);
+  const components = Array(numVertices).fill(-1);
 
   const dfs = index => {
     components[index] = count;
@@ -20,7 +19,7 @@ export const findCCsDFS = (graph, size) => {
       if (components[edge.to] === -1) dfs(edge.to);
   };
 
-  for (let i = 0; i < size; i++)
+  for (let i = 0; i < numVertices; i++)
     if (components[i] === -1) {
       count++;
       dfs(i);
@@ -34,10 +33,10 @@ export const findCCsDFS = (graph, size) => {
  * @param {Map<number, Edge[]} graph an adjaciency list representation of a graph
  * @returns {{components: number[], count: number}} components list and number of components
  */
-export const findCCsUnionFind = (graph, size) => {
-  const uf = new UnionFind(size);
+export const findCCsUnionFind = (graph, numVertices) => {
+  const uf = new UnionFind(numVertices);
 
-  for (let i = 0; i < size; i++) {
+  for (let i = 0; i < numVertices; i++) {
     const edges = graph.get(i);
     if (edges) for (let edge of edges)
       uf.union(edge.from, edge.to);
@@ -88,10 +87,10 @@ export const findSCCsTarjans = (graph, numVertices) => {
   const ids = [];
   const lowLink = [];
   const stack = new ArrayStack();
-  const onStack = [...Array(numVertices)].fill(false);
+  const onStack = Array(numVertices).fill(false);
 
   for (let i = 0; i < numVertices; i++)
     if (ids[i] == null) dfs(i);
 
-  return { components: lowLink, count }
+  return { components: lowLink, count };
 };
