@@ -131,5 +131,5 @@ export const lowestCommonAncestor = (root, size, method) => {
       lca = eulerTour(root, size);
   }
 
-  return { lca };
+  return lca;
 };

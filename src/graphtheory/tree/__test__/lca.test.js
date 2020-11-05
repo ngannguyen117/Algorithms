@@ -25,13 +25,13 @@ const testLCA = method => {
 
     const root = rootTree(graph, 0);
 
-    const solver = lowestCommonAncestor(root, size, method);
-    expect(solver.lca(1, 20)).toBeNull();
-    expect(solver.lca(12, 12)).toBe(12);
-    expect(solver.lca(14, 16)).toBe(11);
-    expect(solver.lca(10, 15)).toBe(5);
-    expect(solver.lca(10, 15)).toBe(5);
-    expect(solver.lca(3, 2)).toBe(0);
+    const lca = lowestCommonAncestor(root, size, method);
+    expect(lca(1, 20)).toBeNull();
+    expect(lca(12, 12)).toBe(12);
+    expect(lca(14, 16)).toBe(11);
+    expect(lca(10, 15)).toBe(5);
+    expect(lca(10, 15)).toBe(5);
+    expect(lca(3, 2)).toBe(0);
   });
 };
 
