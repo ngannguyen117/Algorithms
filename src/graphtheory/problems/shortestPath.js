@@ -30,14 +30,12 @@ import { Queue } from '../../datastructures/queue';
  * indexes showing the shortest path from start node to end node
  */
 export const shortestPathTopSort = (graph, numVertices, start, end) => {
-  const topologicalOrdering = topSort(graph, numVertices);
+  const ordering = topSort(graph, numVertices);
   const prev = [];
   const dist = Array(numVertices).fill(Infinity);
   dist[start] = 0;
 
-  let index = 0;
-  let id = topologicalOrdering[index];
-  while (id !== end) {
+  for (let i = 0, id = ordering[i]; i < numVertices && id !== end; id = ordering[++i])
     if (dist[id] != Infinity) {
       const edges = graph.get(id);
       if (edges) for (let edge of edges) {
@@ -48,9 +46,6 @@ export const shortestPathTopSort = (graph, numVertices, start, end) => {
         }
       }
     }
-
-    id = topologicalOrdering[++index];
-  }
 
   const path = [];
   for (let at = end; at != null; at = prev[at]) path.push(at);
@@ -75,8 +70,8 @@ export const shortestPathBFS = (graph, numVertices, start, end) => {
   const queue = new Queue(start);
   const prev = [];
   let distance = 0;
-  let nodeLeftInLayer = 1;
-  let nodeInNextLayer = 0;
+  let nodesLeftInLayer = 1;
+  let nodesInNextLayer = 0;
   visited[start] = true;
 
   while (!queue.isEmpty()) {
@@ -88,14 +83,14 @@ export const shortestPathBFS = (graph, numVertices, start, end) => {
       if (!visited[edge.to]) {
         visited[edge.to] = true;
         queue.enqueue(edge.to);
-        nodeInNextLayer++;
+        nodesInNextLayer++;
         prev[edge.to] = at;
       }
     
-    nodeLeftInLayer--;
-    if (nodeLeftInLayer === 0 && nodeInNextLayer) {
-      nodeLeftInLayer = nodeInNextLayer;
-      nodeInNextLayer = 0;
+    nodesLeftInLayer--;
+    if (nodesLeftInLayer === 0 && nodesInNextLayer) {
+      nodesLeftInLayer = nodesInNextLayer;
+      nodesInNextLayer = 0;
       distance++;
     }
   }
@@ -134,9 +129,8 @@ export const shortestPathDijkstras = (graph, numVertices, start, end) => {
   dist[start] = 0;
 
   while (!ipq.isEmpty()) {
-    if (nodeId === end) break;
-
     const nodeId = ipq.peakKeyIndex();
+    if (nodeId === end) break;
     visited[nodeId] = true;
 
     if (ipq.pollValue() > dist[nodeId]) continue;
