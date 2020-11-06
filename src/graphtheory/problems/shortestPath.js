@@ -5,7 +5,7 @@
  * 
  * @author Ngan Nguyen, ngan.tx.nguyen@gmail.com
  * 
- * NOTES for SSSP:
+ * NOTES for finding SP from start node to end node:
  *  - Top Sort: weighted Directed Acyclic Graphs. Complexity: O(V + E)
  *  - BFS: large, unweighted, unweighted graphs. Complexity: O(V + E)
  *  - Dijkstra's: Large/Medium non-negative edge weight graphs. Complexity:  O((V + E) x log(V))
@@ -32,17 +32,17 @@ import { Queue } from '../../datastructures/queue';
 export const shortestPathTopSort = (graph, numVertices, start, end) => {
   const topologicalOrdering = topSort(graph, numVertices);
   const prev = [];
-  const dist = [];
+  const dist = Array(numVertices).fill(Infinity);
   dist[start] = 0;
 
   let index = 0;
   let id = topologicalOrdering[index];
   while (id !== end) {
-    if (dist[id] != null) {
+    if (dist[id] != Infinity) {
       const edges = graph.get(id);
       if (edges) for (let edge of edges) {
         const newDist = dist[id] + edge.cost;
-        if (!dist[edge.to] || newDist < dist[edge.to]) {
+        if (newDist < dist[edge.to]) {
           dist[edge.to] = newDist;
           prev[edge.to] = id;
         }
@@ -71,7 +71,7 @@ export const shortestPathTopSort = (graph, numVertices, start, end) => {
  * indexes showing the shortest path from start node to end node
  */
 export const shortestPathBFS = (graph, numVertices, start, end) => {
-  const visited = [...Array(numVertices)].fill(false);
+  const visited = Array(numVertices).fill(false);
   const queue = new Queue(start);
   const prev = [];
   let distance = 0;
@@ -93,7 +93,7 @@ export const shortestPathBFS = (graph, numVertices, start, end) => {
       }
     
     nodeLeftInLayer--;
-    if (nodeLeftInLayer === 0) {
+    if (nodeLeftInLayer === 0 && nodeInNextLayer) {
       nodeLeftInLayer = nodeInNextLayer;
       nodeInNextLayer = 0;
       distance++;
@@ -122,15 +122,14 @@ export const shortestPathBFS = (graph, numVertices, start, end) => {
  * indexes showing the shortest path from start node to end node
  */
 export const shortestPathDijkstras = (graph, numVertices, start, end) => {
-  let edgeCount = 0;
-  for (let edges of graph.values()) edgeCount += edges.length;
+  let numEdges = 0;
+  for (let edges of graph.values()) numEdges += edges.length;
 
-  const degree = Math.floor(edgeCount / numVertices);
-  const ipq = new IndexedDHeap(degree, numVertices);
+  const ipq = new IndexedDHeap(Math.floor(numEdges / numVertices), numVertices);
   ipq.insert(start, 0);
 
-  const dist = [...Array(numVertices)].fill(Number.POSITIVE_INFINITY);
-  const visited = [...Array(numVertices)].fill(false);
+  const dist = Array(numVertices).fill(Infinity);
+  const visited = Array(numVertices).fill(false);
   const prev = [];
   dist[start] = 0;
 
@@ -139,8 +138,8 @@ export const shortestPathDijkstras = (graph, numVertices, start, end) => {
 
     const nodeId = ipq.peakKeyIndex();
     visited[nodeId] = true;
-    const value = ipq.pollValue();
-    if (value > dist[nodeId]) continue;
+
+    if (ipq.pollValue() > dist[nodeId]) continue;
 
     const edges = graph.get(nodeId);
     if (edges) for (let edge of edges) {

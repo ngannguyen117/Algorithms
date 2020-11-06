@@ -29,15 +29,15 @@ describe('Test all Single Source Shortest Path algorithms', () => {
     addDirectedEdge(graph, 5, 4, 7);
 
     let distance = SSSPTopSort(graph, numVertices, 0); 
-    expect(distance[6]).toBeUndefined(); // node 6 can't be reached
+    expect(distance[6]).toBe(Infinity); // node 6 can't be reached
     expect(distance[0]).toBe(0); // distance to itself is 0
     expect(distance[4]).toBe(8);
 
     distance = SSSPTopSort(graph, numVertices, 2);
-    expect(distance[0]).toBeUndefined();
-    expect(distance[1]).toBeUndefined();
-    expect(distance[5]).toBeUndefined();
-    expect(distance[6]).toBeUndefined();
+    expect(distance[0]).toBe(Infinity);
+    expect(distance[1]).toBe(Infinity);
+    expect(distance[5]).toBe(Infinity);
+    expect(distance[6]).toBe(Infinity);
     expect(distance[2]).toBe(0);
     expect(distance[3]).toBe(1);
     expect(distance[4]).toBe(6);

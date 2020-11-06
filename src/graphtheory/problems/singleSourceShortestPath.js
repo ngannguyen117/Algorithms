@@ -36,17 +36,17 @@ import { Queue } from '../../datastructures/queue';
  */
 export const SSSPTopSort = (graph, numVertices, start) => {
   const topologicalOrdering = topSort(graph, numVertices);
-  const dist = [];
+  const dist = Array(numVertices).fill(Infinity);
   dist[start] = 0;
 
   for (let id of topologicalOrdering)
-    if (dist[id] != null) {
+    if (dist[id] != Infinity) {
       const edges = graph.get(id);
       if (edges) for (let edge of edges) {
         const newDist = dist[id] + edge.cost;
-        dist[edge.to] = dist[edge.to] ? Math.min(dist[edge.to], newDist) : newDist;
+        dist[edge.to] = Math.min(dist[edge.to], newDist);
       }
-  }
+    }
 
   return dist;
 };
@@ -63,8 +63,8 @@ export const SSSPTopSort = (graph, numVertices, start) => {
  * @returns {number[]} an array of indexes holding the distances from the start node to all other nodes
  */
 export const SSSPBFS = (graph, numVertices, start) => {
-  const visited = [...Array(numVertices)].fill(false);
-  const dist = [...Array(numVertices)].fill(Number.POSITIVE_INFINITY);
+  const visited = Array(numVertices).fill(false);
+  const dist = Array(numVertices).fill(Infinity);
   const queue = new Queue(start);
   visited[start] = true;
   let nodesLeftInLayer = 1;
@@ -84,7 +84,7 @@ export const SSSPBFS = (graph, numVertices, start) => {
       }
     
     nodesLeftInLayer--;
-    if (nodesLeftInLayer === 0) {
+    if (nodesLeftInLayer === 0 && nodesInNextLayer) {
       nodesLeftInLayer = nodesInNextLayer;
       nodesInNextLayer = 0;
       layer++;
@@ -123,28 +123,25 @@ export const SSSPBFS = (graph, numVertices, start) => {
  * @returns {number[]} an array of indexes holding the distances from the start node to all other nodes
  */
 export const SSSPDijkstras = (graph, numVertices, start) => {
-  let edgeCount = 0;
-  for (let edges of graph.values()) edgeCount += edges.length;
+  let numEdges = 0;
+  for (let edges of graph.values()) numEdges += edges.length;
 
   // Keep an Indexed Priority Queue (ipq) of the next most promising node to visit
-  const degree = Math.floor(edgeCount / numVertices);
-  const ipq = new IndexedDHeap(degree, numVertices);
+  const ipq = new IndexedDHeap(Math.floor(numEdges / numVertices), numVertices);
   ipq.insert(start, 0);
 
   // Maintain an array of the minimum distance to each node.
-  const dist = [...Array(numVertices)].fill(Number.POSITIVE_INFINITY);
+  const dist = Array(numVertices).fill(Infinity);
   dist[start] = 0;
 
-  const visited = [...Array(numVertices)].fill(false);
+  const visited = Array(numVertices).fill(false);
 
   while (!ipq.isEmpty()) {
     const nodeId = ipq.peakKeyIndex();
-
     visited[nodeId] = true;
-    const value = ipq.pollValue();
 
     // We already found a better path before we got to process this node so we can ignore it
-    if (value > dist[nodeId]) continue;
+    if (ipq.pollValue() > dist[nodeId]) continue;
 
     const edges = graph.get(nodeId);
     if (edges) for (let edge of edges) {
@@ -174,13 +171,13 @@ export const SSSPDijkstras = (graph, numVertices, start) => {
  * 
  * Complexity O(VE)
  * 
- * @param {Map<number, Edge[]>} graph an adjaciency representation of a DAG 
+ * @param {Map<number, Edge[]>} graph an adjaciency representation of a graph 
  * @param {number} numVertices number of vertices of the graph 
  * @param {number} start the starting's node index
  * @returns {number[]} an array of indexes holding the distances from the start node to all other nodes
  */
 export const SSSPBellmanFord = (graph, numVertices, start) => {
-  const dist = [...Array(numVertices)].fill(Number.POSITIVE_INFINITY);
+  const dist = Array(numVertices).fill(Infinity);
   dist[start] = 0;
 
   // Only in the worst case does it take V-1 iterations for the Bellman-Ford
@@ -202,12 +199,13 @@ export const SSSPBellmanFord = (graph, numVertices, start) => {
   // Run algorithm a second time to detect which nodes are part
   // of a negative cycle. A negative cycle has occurred if we
   // can find a better path beyond the optimal solution.
+  relaxable = true;
   for (let i = 0; i < numVertices - 1 && relaxable; i++) {
     relaxable = false;
     for (let edges of graph.values())
       for (let edge of edges)
         if (dist[edge.from] + edge.cost < dist[edge.to]) {
-          dist[edge.to] = Number.NEGATIVE_INFINITY;
+          dist[edge.to] = -Infinity;
           relaxable = true;
         }
   }
