@@ -137,18 +137,18 @@ export const SSSPDijkstras = (graph, numVertices, start) => {
   const visited = Array(numVertices).fill(false);
 
   while (!ipq.isEmpty()) {
-    const nodeId = ipq.peakKeyIndex();
-    visited[nodeId] = true;
+    const at = ipq.peakKeyIndex();
+    visited[at] = true;
 
     // We already found a better path before we got to process this node so we can ignore it
-    if (ipq.pollValue() > dist[nodeId]) continue;
+    if (ipq.pollValue() > dist[at]) continue;
 
-    const edges = graph.get(nodeId);
+    const edges = graph.get(at);
     if (edges) for (let edge of edges) {
       if (visited[edge.to]) continue;
 
       // Relax edge by updating minimum cost if applicable.
-      const newDist = dist[nodeId] + edge.cost;
+      const newDist = dist[at] + edge.cost;
       if (newDist < dist[edge.to]) {
         dist[edge.to] = newDist;
 

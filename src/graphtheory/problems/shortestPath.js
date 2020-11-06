@@ -129,18 +129,20 @@ export const shortestPathDijkstras = (graph, numVertices, start, end) => {
   dist[start] = 0;
 
   while (!ipq.isEmpty()) {
-    const nodeId = ipq.peakKeyIndex();
-    if (nodeId === end) break;
-    visited[nodeId] = true;
+    const at = ipq.peakKeyIndex();
+    if (at === end) break;
+    visited[at] = true;
 
-    if (ipq.pollValue() > dist[nodeId]) continue;
+    if (ipq.pollValue() > dist[at]) continue;
 
-    const edges = graph.get(nodeId);
+    const edges = graph.get(at);
     if (edges) for (let edge of edges) {
-      const newDist = dist[nodeId] + edge.cost;
+      if (visited[edge.to]) continue;
+
+      const newDist = dist[at] + edge.cost;
       if (newDist < dist[edge.to]) {
         dist[edge.to] = newDist;
-        prev[edge.to] = nodeId;
+        prev[edge.to] = at;
 
         if (ipq.contains(edge.to)) ipq.decrease(edge.to, newDist);
         else ipq.insert(edge.to, newDist);
