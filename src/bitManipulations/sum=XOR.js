@@ -6,7 +6,7 @@
  * 111 ^ 001 = 110, 111 + 1 = 1000    -- i = 1
  * ...
  * 
- * n = 8 - 0b1100
+ * n = 12 - 0b1100
  * 1100 ^ 0000 = 1100, 1100 + 0000 = 1100   -- i = 0
  * 1100 ^ 0001 = 1101, 1100 + 0001 = 1101   -- i = 1
  * 1100 ^ 0010 = 1110, 1100 + 0010 = 1110   -- i = 2
@@ -23,10 +23,6 @@
  */
 export const countNumberOfSumEqualsXOR = num => {
   let numberOfUnsetBits = 0;
-  while (num > 0) {
-    if ((num & 1) === 0) numberOfUnsetBits++;
-    num >>= 1;
-  }
-
+  for (; num > 0 && (num & 1) === 0; num >>= 1) numberOfUnsetBits++;
   return 1 << numberOfUnsetBits;
 };
