@@ -37,6 +37,13 @@ export const generatePowersetBinary = array => {
   return powerset;
 };
 
+/**
+ * Generate a powerset of a set (the set of all subsets of a set) recursively
+ * 
+ * O(n2^n)
+ * 
+ * This use a little bit more space than the binary solution
+ */
 export const generatePowersetRecursive = array => {
   const helper = at => {
     if (at === n) {
@@ -59,6 +66,5 @@ export const generatePowersetRecursive = array => {
   const powerset = [];
   helper(0);
 
-  console.log(powerset)
   return powerset;
 };
