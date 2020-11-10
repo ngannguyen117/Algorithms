@@ -23,7 +23,7 @@
 export const countSetBits = number => {
   // Create an 8-bit lookup table
   const lookup = [0];
-  for (let i = 1; i < 256; i++) lookup[i] = (i & 1) + lookup[i >> 2];
+  for (let i = 1; i < 256; i++) lookup[i] = (i & 1) + lookup[i >> 1];
 
   // count the number of set bits
   let count = 0;
@@ -33,4 +33,47 @@ export const countSetBits = number => {
   }
 
   return count;
+};
+
+
+/**
+ * Given a positive integer n, count the total number of set bits in binary
+ * representation of all numbers from 1 to n.
+ * 
+ * O(logn)
+ * 
+ * There are 2 cases:
+ *  - Case 1:
+ *    - All bits in n are set (ex 0b1, 0b11, 0b111)
+ *    - n is in the form n = 2^b - 1 where b is the position of the left most set bit of n in 1-base
+ *    - If n = 3 (0b11), b is 2; If n = 7 (0b111), b is 3
+ *    - Total bits of all numbers from 1 to n is b x 2^(b -1)
+ *  - Case 2:
+ *    - There're unset bits in n (ex 0b110, 0b1000)
+ *    - Let m be the next left most set bit after b
+ *    - If n = 6 (Ob110), b = 2, m = 1; If n = 8 0b1000, b = 4, m = 3
+ *    - Let newN = n - (1 << m)
+ *    - Total bits of all numbers from 1 to n is newN + 1 + m x (1 << (m - 1)) + countSetBits1ToN(newN)
+ * 
+ *                0  |   0 0   |
+ *                0  |   0 1   } m * (1 << (m - 1)) = 2 * (1 << 1)
+ *                0  |   1 0   | ~ case 1 for #3 (0b11)
+ *                0  |   1 1   |
+ *                ---|------
+ *                1  |   0 0
+ *                1  |   0 1
+ *                1  |   1 0
+ *  n - (1 << m) + 1     countSetBits1ToN(newN)
+ *  6 - (1 << 2) + 1     countSetBits1ToN(2)
+ */
+export const countSetBits1ToN = n => {
+  if (n === 0) return 0;
+
+  // get position of the left most set bit in 1-base
+  const b = Math.floor(Math.log2(n)) + 1;
+  if (n === (1 << b) - 1) return b * (1 << (b - 1));
+
+  const m = b - 1; // next left most set bit
+  n = n - (1 << m);
+  return n + 1 + countSetBits1ToN(n) + m * (1 << (m - 1));
 };
