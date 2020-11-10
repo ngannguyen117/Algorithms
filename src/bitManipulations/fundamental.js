@@ -29,7 +29,7 @@ export const isPowerOfTwo = x => x > 0 && (x & (x - 1)) === 0;
 export const isEven = x => (x & 1) === 0;
 
 /**
- * Set the i-th bit of number to 1
+ * Set the i-th bit of number to 1 (1-base)
  * 
  * i = 3
  * 1 << 3 = 2^3 = 6 = 0b100
@@ -39,10 +39,10 @@ export const isEven = x => (x & 1) === 0;
  * -----------         -----------
  *    00010100            00001111
  */
-export const setBit = (number, i) => number | (1 << i);
+export const setBit = (number, i) => number | (1 << (i - 1));
 
 /**
- * Check the i-th bit of number is set to 1
+ * Check the i-th bit of number is set to 1 (1-base)
  * 
  * i = 3
  * 1 << 3 = 2^3 = 6 = 0b100
@@ -52,7 +52,7 @@ export const setBit = (number, i) => number | (1 << i);
  * -----------         -----------
  *    00000000            00000100
  */
-export const isBitSet = (number, i) => (number & (1 << i)) === 0;
+export const isBitSet = (number, i) => (number & (1 << (i - 1))) !== 0;
 
 /**
  * Set the i-th bit of number to 0
@@ -65,7 +65,7 @@ export const isBitSet = (number, i) => (number & (1 << i)) === 0;
  * -----------         -----------
  *    00010000            00001011
  */
-export const clearBit = (number, i) => number & ~(1 << i);
+export const clearBit = (number, i) => number & ~(1 << (i - 1));
 
 /**
  * Toggle the i-th bit of number from 0 to 1 and vice versa
@@ -78,10 +78,10 @@ export const clearBit = (number, i) => number & ~(1 << i);
  * -----------         -----------
  *    00010100            00001011
  */
-export const toggleBit = (number, i) => number ^ (1 << i);
+export const toggleBit = (number, i) => number ^ (1 << (i - 1));
 
 /**
- * Returns a number with the first n-bits set to 1
+ * Returns a number with the first n-bits set to 1 (a mask of first n-bits set to 1)
  * 
  * n = 4 => 1 << 4 is 2^4 => in binary 00010000
  * 
@@ -157,8 +157,7 @@ export const binaryToDecimal = binaryNumber => parseInt(binaryNumber, 2);
  */
 export const flipActualBits = number => {
   const numBits = Math.floor(Math.log2(number)) + 1; // = 32 - Math.clz32(number)
-  let mask = 1 << numBits;
-  mask |= mask - 1;
+  const mask = (1 << numBits) - 1;
 
   return number ^ mask;
 };
