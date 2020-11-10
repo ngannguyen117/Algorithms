@@ -62,4 +62,4 @@ export const computeSumOfSubsetsXors = arr => {
   for (let elem of arr) or |= elem;
 
   return or * Math.pow(2, arr.length - 1);
-}
+};

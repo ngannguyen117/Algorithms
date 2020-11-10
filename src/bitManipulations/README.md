@@ -11,7 +11,7 @@
   - 101 ^ 011 = 110
 - **~ (NOT)**
   - inverts the bits of its operand
-  - ~00000101 = 11111010
+  - ~101 = 11111010
 - **<< (Left shift)**
   - shifts the first operand the specified number of bits to the left. Excess bits shifted off to the left are discarded. Zero bits are shifted in from the right.
   - a << b is equivalent to a \* 2^b
@@ -37,9 +37,9 @@
 
 - x ^ 0 = x
 - x ^ x = 0
-- x ^ 1111s = ~x
 
 - x & (n - 1) is equivalent to (x % n), but faster
+- ~x = -x - 1
 
 # Tips
 
