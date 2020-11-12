@@ -1,7 +1,12 @@
+import { mergeSort } from '../sorting/mergesort';
+
 /**
- * Recursively generate all combinations of a sequence by choosing only k of n elements.
- * If there are repetition of elements in the sequence, the combinations will
- * also be repetitive.
+ * Recursively generate combinations of a sequence by choosing only k of n elements.
+ * By default (unique = false), if there are repetition of elements in the sequence,
+ * the combinations will also be repetitive.
+ * 
+ * To only produce unique combinations (in case of repetitive elements in the sequence),
+ * set unique to true.
  * 
  * To find all combination of size k, we need to recurse until we have selected k elements
  * (i.e. r = 0). Otherwise if r != 0 then we need to select an element which is found
@@ -9,7 +14,7 @@
  * 
  * O( n choose k )
  */
-export const generateCombinationsRecursive = function* (arr, k) {
+export const generateCombinationsRecursive = function* (arr, k, unique = false) {
   const helper = function* (at, r) {
     // Return early if there are more elements left to select than what is available.
     if (n - at < r) return;
@@ -21,6 +26,10 @@ export const generateCombinationsRecursive = function* (arr, k) {
       yield subset;
     } else {
       for (let i = at; i < n; i++) {
+        // if unique is true, since the elements are sorted we can skip duplicate
+        // elements to ensure the uniqueness of our output.
+        if (unique && i > at && arr[i - 1] == arr[i]) continue;
+
         used[i] = true; // include this element
         yield *helper(i + 1, r - 1);
 
@@ -33,6 +42,9 @@ export const generateCombinationsRecursive = function* (arr, k) {
 
   const n = arr.length;
   if (k < 0 || k > n) return;
+
+  // Sort the sequence so we can easily skip duplicates.
+  if (unique) arr = mergeSort(arr);
 
   const used = Array(n).fill(false);
   yield *helper(0, k);
