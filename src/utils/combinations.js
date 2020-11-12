@@ -29,9 +29,41 @@ export const generateCombinationsRecursive = function* (arr, k) {
     }
   };
 
-  if (!arr || k < 0) return;
+  if (!arr) return;
 
   const n = arr.length;
+  if (k < 0 || k > n) return;
+
   const used = Array(n).fill(false);
   yield *helper(0, k);
+};
+
+/**
+ * Iteratively generate all combinations of a sequence by choosing only k of n elements.
+ * If there are repetition of elements in the sequence, the combinations will
+ * also be repetitive.
+ * 
+ * O( n choose k )
+ */
+export const generateCombinationsIterative = function* (arr, k) {
+  if (!arr) return;
+
+  const n = arr.length;
+  if (k < 0 || k > n) return;
+
+  // initialize selection with 1...(k-1)
+  const selection = Array(k);
+  for (let i = 0; i < k; i++) selection[i] = i;
+
+  const combination = Array(k);
+  while (true) {
+    for (let i = 0; i < k; i++) combination[i] = arr[selection[i]];
+    yield combination;
+
+    let i = k - 1;
+    while (selection[i] === n - k + i) if (--i < 0) return;
+
+    selection[i++]++;
+    for (; i < k; i++) selection[i] = selection[i - 1] + 1;
+  }
 };
