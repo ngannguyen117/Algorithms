@@ -1,6 +1,7 @@
 import {
   generateCombinationsRecursive,
   generateCombinationsIterative,
+  generateCombinationsWithRepetition,
 } from '../combinations';
 
 describe('Test generating combinations by choosing r from n elements', () => {
@@ -74,5 +75,19 @@ describe('Test generating combinations by choosing r from n elements', () => {
     i = 0;
     for (let subset of iter) expect(subset).toStrictEqual(set2Combinations[i++]);
     expect(i).toBe(14);
+  });
+
+  test('Generate combinations with element repetitons up to x times', () => {
+    const set = [1, 2, 3, 4];
+    const combinations = [
+      [3, 4, 4], [3, 3, 4], [2, 4, 4], [2, 3, 4], [2, 3, 3], [2, 2, 4],
+      [2, 2, 3], [1, 4, 4], [1, 3, 4], [1, 3, 3], [1, 2, 4], [1, 2, 3],
+      [1, 2, 2], [1, 1, 4], [1, 1, 3], [1, 1, 2]
+    ];
+
+    const iter = generateCombinationsWithRepetition(set, 3, 2);
+    let i = 0;
+    for (let subset of iter) expect(subset).toStrictEqual(combinations[i++]);
+    expect(i).toBe(16);
   });
 });

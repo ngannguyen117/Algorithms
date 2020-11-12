@@ -79,3 +79,64 @@ export const generateCombinationsIterative = function* (arr, k) {
     for (; i < k; i++) selection[i] = selection[i - 1] + 1;
   }
 };
+
+/**
+ * Generate all the size k combinations of a sequence. Each element of the sequence
+ * can be repeated in a combination at most x times.
+ *
+ * O(n+k-1 choose k) = O((n+k-1)!/(k!(n-1)!))
+ * 
+ * [1, 2, 3, 4], k = 3, x = 2
+ * helper(0, 3):
+ *    count = 0:  [0, 0, 0, 0]
+ *                helper(1, 3):
+ *                    count = 0:  [0, 0, 0, 0]
+ *                                helper(2, 3):
+ *                                    count = 0:  [0, 0, 0, 0]
+ *                                                helper(3, 3):
+ *                                                    count = 0:  [0, 0, 0, 0] helper(4, 3)
+ *                                                    count = 1:  [0, 0, 0, 1] helper(4, 2)
+ *                                                    count = 2:  [0, 0, 0, 2] helper(4, 1)
+ *                                    count = 1:  [0, 0, 1, 2]
+ *                                                helper(3, 2):
+ *                                                    count = 0:  [0, 0, 1, 0] helper(4, 2)
+ *                                                    count = 1:  [0, 0, 1, 1] helper(4, 1)
+ *                                                    count = 2:  [0, 0, 1, 2] helper(4, 0) => YIELD [3, 4, 4]
+ *                                    count = 2:  [0, 0, 2, 2]
+ *                                                helper(3, 1):
+ *                                                    count = 0:  [0, 0, 2, 0] helper(4, 1)
+ *                                                    count = 1:  [0, 0, 2, 1] helper(4, 0) => YIELD [3, 3, 4]
+ *                                                    count = 2:  [0, 0, 2, 2] helper(4, -1)
+ *                    count = 1:  [0, 1, 2, 2]
+ *                                helper(2, 3):
+ *                                    count = 0:  [0, 1, 0, 2]
+ *                                                helper(3, 3):
+ *                                                    count = 0:  [0, 1, 0, 0] helper(4, 3)
+ */
+export const generateCombinationsWithRepetition = function* (arr, k, x) {
+  const helper = function* (at, r) {
+    if (at < n)
+      // For this particular time at position 'at' try including it each of [0, x] times
+      for (let itemCount = 0; itemCount <= x; itemCount++) {
+        // Try including this element itemCount number of times (this is possibly more than once)
+        usedCount[at] = itemCount;
+
+        yield *helper(at + 1, r - itemCount);
+      }
+    else if (at === n) // reached the end
+      if (r === 0) { // We selected 'k' elements total
+          const subset = [];
+          for (let i = 0; i < n; i++)
+            for (let j = 0; j < usedCount[i]; j++) subset.push(arr[i]);
+          yield subset;
+        }
+  };
+
+  if (!arr) return;
+
+  const n = arr.length;
+  if (k < 0 || k > n) return;
+
+  const usedCount = Array(n).fill(0);
+  yield *helper(0, k);
+};
