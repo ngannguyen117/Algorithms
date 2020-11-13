@@ -38,4 +38,16 @@ describe('Test Suffix Array', () => {
     for (let i = 0; i < UNIQUE_CHARS.length; i++)
       expect(lcp[i]).toBe(i);
   });
+
+  test('Test SA with coded text as input', () => {
+    let sa = new SuffixArray([98, 97, 110, 97, 110, 97]); // 'banana'
+    expect(sa.getSuffixArray()).toStrictEqual([5, 3, 1, 0, 4, 2]);
+    expect(sa.getLCPArray()).toStrictEqual([0, 1, 3, 0, 0, 2]);
+
+    sa = new SuffixArray([65, 66, 66, 65, 66, 65, 65, 66, 65, 65]); // 'ABBABAABAA'
+    expect(sa.getLCPArray()).toStrictEqual([0, 1, 2, 1, 4, 2, 0, 3, 2, 1]);
+
+    sa = new SuffixArray([65, 66, 65, 66, 65, 66, 65, 65, 66, 66]); // 'ABABABAABB'
+    expect(sa.getLCPArray()).toStrictEqual([0, 1, 3, 5, 2, 0, 1, 2, 4, 1]);
+  });
 });

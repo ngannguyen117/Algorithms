@@ -20,7 +20,7 @@
  * 
  * Date: 11/03/2020
  * 
- * @param {string} text text input that we need to build a SA for
+ * @param {string | number[]} text text input that we need to build a SA for
  */
 export function SuffixArray (text) {
   // Validate input
@@ -28,7 +28,7 @@ export function SuffixArray (text) {
 
   //-------------------------- Initialize local variables ------------------------------
   const size = text.length;
-  const codedText = [];
+  let codedText = [];
   const lcp = [0];
   const sa = []; // sorted suffix array which stores the starting index of the text's suffixes
 
@@ -39,8 +39,13 @@ export function SuffixArray (text) {
   const temp = [];
   let i, r;
 
-  // the initial rank of each suffix is its first character's ascii value
-  for (i = 0; i < size; i++) rank[i] = codedText[i] = text.charCodeAt(i);
+  // the initial rank of each suffix is its first character's ascii value, if codedText isn't provided
+  if (Array.isArray(text)) {
+    codedText = [...text];
+    rank = [...text];
+  } else {
+    for (i = 0; i < size; i++) rank[i] = codedText[i] = text.charCodeAt(i);
+  }
 
   // use the initial ranking to sort the suffix array once
   for (i = 0; i < size; i++) c[rank[i]]++;
