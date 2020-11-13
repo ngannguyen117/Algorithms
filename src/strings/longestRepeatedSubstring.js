@@ -1,4 +1,5 @@
 import { SuffixArray } from '../datastructures/suffixarray';
+
 /**
  * Find the longest repeated substring(s) that occurs in a string.
  * We are only interested in substrings that appear at least twice,
@@ -13,7 +14,7 @@ export const findLongestRepeatedSubstrings = text => {
   const lcp = SA.getLCPArray();
   let substrings = [];
   let maxLen = 0;
-  console.log(sa, lcp)
+
   for (let i = 0; i < text.length; i++)
     if (lcp[i] > 0 && lcp[i] >= maxLen) {
       // found longer lcp so clear shorter substrings
