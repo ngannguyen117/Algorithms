@@ -17,7 +17,7 @@ export const SlidingWindowType = Object.freeze({
  * @param {number[]} values The underlying array/collection that this window slides on
  * @param {SlidingWindowType} type 
  */
-export function SlidingWindow (values, type = SlidingWindowType.MAXIMUM) {
+export function SlidingWindow (values, type = SlidingWindowType.MINIMUM) {
   if (!values || !Array.isArray(values)) throw new Error('An array of values is required');
 
   let lo = 0;
