@@ -1,4 +1,6 @@
 import { SuffixArray } from '../datastructures/suffixarray';
+import { constructLCPArray } from './longestCommonPrefixArray';
+import { convertStringToAsciiCodes } from '../utils/convertStringToAsciiCodes';
 
 /**
  * Find the longest repeated substring(s) that occurs in a string.
@@ -9,9 +11,9 @@ import { SuffixArray } from '../datastructures/suffixarray';
  * Time complexity: O(nlogn), bounded by suffix array construction
  */
 export const findLongestRepeatedSubstrings = text => {
-  const SA = new SuffixArray(text);
-  const sa = SA.getSuffixArray();
-  const lcp = SA.getLCPArray();
+  const codedText = convertStringToAsciiCodes(text);
+  const sa = new SuffixArray(codedText).getSuffixArray();
+  const lcp = constructLCPArray(codedText, sa);
   let substrings = [];
   let maxLen = 0;
 

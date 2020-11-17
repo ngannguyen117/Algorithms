@@ -1,4 +1,6 @@
 import { SuffixArray } from '../datastructures/suffixarray';
+import { constructLCPArray } from './longestCommonPrefixArray';
+import { convertStringToAsciiCodes } from '../utils/convertStringToAsciiCodes';
 
 /**
  * Find the list of unique substrings.
@@ -11,9 +13,9 @@ import { SuffixArray } from '../datastructures/suffixarray';
  * => O(nlogn) because generating substrings could take linear time
  */
 export const findUniqueSubstrings1 = text => {
-  let sa = new SuffixArray(text);
-  const lcp = sa.getLCPArray();
-  sa = sa.getSuffixArray();
+  const codedText = convertStringToAsciiCodes(text);
+  const sa = new SuffixArray(codedText).getSuffixArray();
+  const lcp = constructLCPArray(codedText, sa);
 
   const substrs = [];
   for (let i = 0; i < text.length; i++) {
@@ -48,8 +50,11 @@ export const findUniqueSubstrings2 = text => {
  * Space complexity O(n)
  */
 export const countNumberOfUniqueSubstrings = str => {
-  const sa = new SuffixArray(str);
-  const numDuplicates = sa.getLCPArray().reduce((acc, val) => acc + val);
+  const codedText = convertStringToAsciiCodes(str);
+  const sa = new SuffixArray(codedText).getSuffixArray();
+  const lcp = constructLCPArray(codedText, sa);
+
+  const numDuplicates = lcp.reduce((acc, val) => acc + val);
   const numSubstrs = (str.length * (str.length + 1)) / 2;
   return numSubstrs - numDuplicates;
 };

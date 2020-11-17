@@ -1,20 +1,13 @@
 /**
- * Suffix Array (SA) Implementation along with constructing Longest Common Prefix (LCP) for the SA
- * based on William Fiset's Java implementation.
+ * Suffix Array (SA) Implementation based on William Fiset's Java implementation.
  * 
  * SA: an array which contains the sorted suffixes of a string.
  * (To save space, we store the starting index of each suffix in the SA instead of the suffix strings.)
  * 
- * LCP: an array in which every index tracks how many characters two sorted adjacient suffixes have in common
- * (lcp[1] holds common chars from sa[0] and sa[1]. That's why lcp[0] = 0)
- * 
- * Complexity:
- *  - SA construction: O(nlog(n))
- *  - LCP construction: O(n) (Kasai algorithm)
+ * Complexity: O(nlog(n))
  * 
  * Example of how the algorithm works:
- *  - SA construction {@link https://www.geeksforgeeks.org/suffix-array-set-2-a-nlognlogn-algorithm/}
- *  - LCP construction {@link https://youtu.be/53VIWj8ksyI}
+ *  {@link https://www.geeksforgeeks.org/suffix-array-set-2-a-nlognlogn-algorithm/}
  * 
  * @author Ngan Nguyen, ngan.tx.nguyen@gmail.com
  * 
@@ -28,8 +21,6 @@ export function SuffixArray (text) {
 
   //-------------------------- Initialize local variables ------------------------------
   const size = text.length;
-  let codedText = [];
-  const lcp = [0];
   const sa = []; // sorted suffix array which stores the starting index of the text's suffixes
 
   //------------ construct suffix array using prefix doubling and Radix sort --------------
@@ -40,12 +31,8 @@ export function SuffixArray (text) {
   let i, r;
 
   // the initial rank of each suffix is its first character's ascii value, if codedText isn't provided
-  if (Array.isArray(text)) {
-    codedText = [...text];
-    rank = [...text];
-  } else {
-    for (i = 0; i < size; i++) rank[i] = codedText[i] = text.charCodeAt(i);
-  }
+  if (Array.isArray(text)) rank = [...text];
+  else for (i = 0; i < size; i++) rank[i] = text.charCodeAt(i);
 
   // use the initial ranking to sort the suffix array once
   for (i = 0; i < size; i++) c[rank[i]]++;
@@ -79,33 +66,10 @@ export function SuffixArray (text) {
     alphabetSize = r + 1; // to decrease the size of c array
   }
 
-  //------------------------ construct Longest Common Prefix Array -----------------------
-  // Si: suffix string that starts at index i
-  // inv[i] = j: Si has rank j in lexicographic order (or Si is at position j in SA)
-  // sa[j] = i:  j-th lowest suffix in lexicographic order is Si
-  const inverse = [];
-  for (let i = 0; i < size; i++) inverse[sa[i]] = i;
-
-  for (let i = 0, len = 0; i < size; i++)
-    if (inverse[i] > 0) {
-      const k = sa[inverse[i] - 1]; // starting index of the previous suffix in the SA
-
-      // count number of common characters between the 2 suffixes
-      while (
-        i + len < size &&
-        k + len < size &&
-        codedText[i + len] === codedText[k + len]
-      ) len++;
-
-      lcp[inverse[i]] = len;
-
-      // Since we're processing the longest to the shortest suffixes, we'd get the max
-      // number of common characters first. So the number of common chars can only get
-      // smaller after each iteration.
-      if (len > 0) len--;
-    }
-
   //----------------------------------- Public Methods ----------------------------------
+  /**
+   * Get the suffix array
+   * @returns {number[]} sorted suffixes' starting index
+   */
   this.getSuffixArray = () => sa;
-  this.getLCPArray = () => lcp;
 }

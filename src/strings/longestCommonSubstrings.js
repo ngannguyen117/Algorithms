@@ -1,4 +1,5 @@
 import { SuffixArray } from '../datastructures/suffixarray';
+import { constructLCPArray } from './longestCommonPrefixArray';
 import { SlidingWindow } from '../utils/SlidingWindow';
 
 /**
@@ -54,10 +55,9 @@ export const findLongestCommonSubstrings = (strings, k) => {
     codedText[k++] = sentinel++;
   }
 
-  // Build Suffix Array
-  const SA = new SuffixArray(codedText);
-  const sa = SA.getSuffixArray();
-  const lcp = SA.getLCPArray();
+  // Build Suffix Array & LCP array
+  const sa = new SuffixArray(codedText).getSuffixArray();
+  const lcp = constructLCPArray(codedText, sa);
 
   const window = new SlidingWindow(lcp); // Minimum Sliding Window
   const colorTrackingSet = new Set();
