@@ -12,8 +12,7 @@ import { SuffixArray } from '../datastructures/suffixarray';
  * @param {string} pattern pattern/substring
  */
 export const searchPatternSA = (text, pattern) => {
-  if (text == null || pattern == null) return -1;
-  if (pattern === '') return 0;
+  if (text == null || pattern == null || pattern === '') return -1;
 
   const n = text.length;
   const m = pattern.length;
@@ -52,6 +51,27 @@ export const searchPatternSA = (text, pattern) => {
  * Time complexity: O(n)
  * Space complexity: O(m)
  * 
+ * Example:
+ *  - text: a b x a b c a b c a b y
+ *  - pattern:          a b c a b y
+ *  - longestMatch:    [0,0,0,1,2,0]
+ * 
+ *  - a b x a b c a b c a b y     i = 2
+ *  - a b c a b y                 j = 2
+ *        |--> mismatch, longestMatch[j - 1 = 1] is 0 => assign j = 0
+ * 
+ *  - a b x a b c a b c a b y     i = 2
+ *  -     a b c a b y             j = 0
+ *        |--> mismatch, j == 0 => assign i += 1 => i = 3
+ * 
+ *  - a b x a b c a b c a b y     i = 8
+ *  -       a b c a b y           j = 5
+ *                    |--> mismatch, longestMatch[4] is 2 => j = 2
+ * 
+ *  - a b x a b c a b c a b y     i = 12
+ *  -             a b c a b y     j = 6
+ *                            |-> j === m => found a match at index 6
+ * 
  * @param {string} text A string 
  * @param {string} pattern pattern/substring
  */
@@ -71,14 +91,13 @@ export const searchPatternKMP = (text, pattern) => {
     return arr;
   };
 
-  if (text == null || pattern == null) return [];
-  if (pattern === '') return [0];
+  if (text == null || pattern == null || pattern === '') return [];
 
   const n = text.length;
   const m = pattern.length;
   if (m > n) return [];
 
-  const matches = [];
+  const occurences = [];
   const longestMatch = computeLongestMatch();
   let i = 0;
   let j = 0;
@@ -91,10 +110,97 @@ export const searchPatternKMP = (text, pattern) => {
     else j = longestMatch[j - 1];
 
     if (j === m) {
-      matches.push(i - m);
+      occurences.push(i - m);
       j = longestMatch[j - 1];
     }
   }
 
-  return matches;
+  return occurences;
+};
+
+/**
+ * Find all occurences' start index of matching pattern in the text (including 
+ * overlapping matching) using Boyer-Moore algorithm.
+ * 
+ * Boyer-Moore explanation
+ *  - Basic {@link https://www.youtube.com/watch?v=4Xyhb72LCX4, https://www.youtube.com/watch?v=lkL6RkQvpMM}
+ *  - Put it together {@link https://www.youtube.com/watch?v=Wj606N0IAsw}
+ *  - Pseudocode {@link https://www.inf.hs-flensburg.de/lang/algorithmen/pattern/bmen.htm}
+ * 
+ * Time complexity:
+ *  - O(m) if there are only a constant number of matches of the pattern in the text
+ *  - O(nm) in general
+ *  - O(n/m) if the alphabet is large compared to the length of the pattern (a shift
+ *    by m is possible due to the bad character heuristics).
+ * 
+ * @param {string} text A string 
+ * @param {string} pattern pattern/substring
+ */
+export const searchPatternBoyerMoore = (text, pattern) => {
+  /**
+   * Boyer-Moore preprocessing for bad character heuristics and good Suffix heuristics
+   * 
+   * suffixMatch[i] = j (j > i) means suffix starting at j is the prefix of the suffix starting at i
+   * Ex of pattern abbabab
+   *              0 1 2 3 4 5 6 7
+   *  Pattern:    a b b a b a b
+   *  suffixMatch: 5 6 4 5 6 7 7 8
+   * 
+   * suffixMatch[4] = 6 : suffix at index 6 'b' is the prefix 'b' of the suffix at index 4 'bab'
+   * suffixMatch[2] = 4 : suffix[2] = 'babab' has prefix 'bab' that matches the suffix at index 4 'bab'
+   * suffixMatch[0] = 5 : suffix[0] = 'abbabab' has prefix 'ab' that matches suffix[5] = 'ab'
+   */
+  const preprocess = () => {
+    // Bad character rule: Generate the right most occurence index for
+    // each character in the pattern
+    for (let i = 0; i < m; i++) rightMostOccurence[pattern.charCodeAt(i)] = i;
+
+    // Good Suffix rule: Generate a shift distance table
+    const suffixMatch = Array(m + 1).fill(0);
+
+    // Case 1: Exact match of good suffix exists somewhere in the pattern ('bab' in 'babab')
+    i = m, j = m + 1, suffixMatch[i] = j;
+    while (i > 0) {
+      while (j <= m && pattern[i - 1] !== pattern[j - 1]) {
+        if (shiftDistance[j] === 0) shiftDistance[j] = j - i;
+        j = suffixMatch[j];
+      }
+
+      suffixMatch[--i] = --j;
+    }
+
+    // Case 2: Partial of good suffix exists as a prefix of the pattern ('ab' in 'abbabab')
+    j = suffixMatch[0];
+    for (i = 0; i <= m; i++) {
+      if (shiftDistance[i] === 0) shiftDistance[i] = j;
+      if (i === j) j = suffixMatch[j];
+    }
+  };
+
+  if (text == null || pattern == null || pattern === '') return [];
+
+  const n = text.length;
+  const m = pattern.length;
+  if (m > n) return [];
+
+  const rightMostOccurence = Array(256).fill(-1); // Max alphabet size is 256
+  const shiftDistance = Array(m + 1).fill(0);
+  let i, j;
+  preprocess();
+
+  const occurences = [];
+  for (i = 0, j = m - 1; i <= n - m; j = m - 1) {
+    while (j >= 0 && pattern[j] === text[i + j]) j--;
+
+    if (j < 0) {
+      // found 1 match
+      occurences.push(i);
+      i += shiftDistance[0];
+    } else {
+      // encounter a mismatch, get the max possible shifts from the good suffix & bad char heuristics
+      i += Math.max(shiftDistance[j + 1], j - rightMostOccurence[text.charCodeAt(i + j)]);
+    }
+  }
+
+  return occurences;
 };
