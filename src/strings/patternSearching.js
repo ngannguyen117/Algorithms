@@ -204,3 +204,60 @@ export const searchPatternBoyerMoore = (text, pattern) => {
 
   return occurences;
 };
+
+/**
+ * Find all occurences' start index of matching pattern in the text (including 
+ * overlapping matching) using Z algorithm.
+ * 
+ * Time Complexity: O(n + m)
+ * Space Complexity: O(n + m)
+ * 
+ * Explanation {@link https://www.youtube.com/watch?v=CpZh4eF8QBw}
+ * 
+ * Example: text 'xabcabzabc', pattern: 'abc'
+ * 
+ *                    0 1 2 3 4 5 6 7 8 9 10 11 12 13
+ * combined string:   a b c $ x a b c a b z  a  b  c
+ * Z array:           0 0 0 0 0 3 0 0 2 0 0  3  0  0
+ *                              |-> match    |-> match
+ * 
+ * @param {string} text A string 
+ * @param {string} pattern pattern/substring
+ */
+export const searchPatternZAlgorithm = (text, pattern) => {
+  if (text == null || pattern == null || pattern === '') return [];
+
+  const n = text.length;
+  const m = pattern.length;
+  if (m > n) return [];
+
+  // Compute Z array on the combined string using Z algorithm
+  const str = pattern.concat('$').concat(text);
+  const len = n + m + 1;
+  const Z = Array(len).fill(0);
+  
+  for (let i = 1, left = 0, right = 0; i < len; i++)
+    if (i > right) {
+      left = right = i;
+      while (right < len && str[right] === str[right - left]) right++;
+      Z[i] = right - left;
+      right--;
+    } else {
+      const k = i - left; // operate inside the box
+
+      if (Z[k] <= right - i) Z[i] = Z[k];
+      else {
+        left = i;
+        while (right < len && str[right] === str[right - left]) right++;
+        Z[i] = right - left;
+        right--;
+      }
+    }
+
+  // Go through the Z array to find which substrings matches the pattern
+  const occurences = [];
+  for (let i = m + 1; i < len; i++)
+    if (Z[i] === m) occurences.push(i - m - 1);
+
+  return occurences;
+};

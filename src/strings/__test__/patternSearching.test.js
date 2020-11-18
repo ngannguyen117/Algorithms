@@ -2,6 +2,7 @@ import {
   searchPatternSA,
   searchPatternKMP,
   searchPatternBoyerMoore,
+  searchPatternZAlgorithm,
 } from '../patternSearching';
 
 describe('Test all Pattern Searching Algorithms', () => {
@@ -55,4 +56,5 @@ describe('Test all Pattern Searching Algorithms', () => {
 
   occurences(searchPatternKMP, 'KMP');
   occurences(searchPatternBoyerMoore, 'Boyer-Moore');
+  occurences(searchPatternZAlgorithm, 'Z Algorithm');
 });
