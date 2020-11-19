@@ -1,8 +1,9 @@
 import {
-  searchPatternSA,
-  searchPatternKMP,
-  searchPatternBoyerMoore,
-  searchPatternZAlgorithm,
+  patternSearchSA,
+  patternSearchKMP,
+  patternSearchBoyerMoore,
+  patternSearchZAlgorithm,
+  patternSearchRabinKarp,
 } from '../patternSearching';
 
 describe('Test all Pattern Searching Algorithms', () => {
@@ -39,22 +40,23 @@ describe('Test all Pattern Searching Algorithms', () => {
   };
 
   test('Test Pattern Searching using Suffix Array', () => {
-    expect(searchPatternSA(...test0)).toBe(-1);
-    expect(searchPatternSA(...test1)).toBe(-1);
-    expect(searchPatternSA(...test2)).toBe(-1);
-    expect(searchPatternSA(...test3)).not.toBe(-1);
-    expect(searchPatternSA(...test4)).toBe(-1);
-    expect(searchPatternSA(...test5)).not.toBe(-1);
-    expect(searchPatternSA(...test6)).not.toBe(-1);
-    expect(searchPatternSA(...test7)).toBe(0);
-    expect(searchPatternSA(...test8)).not.toBe(-1);
-    expect(searchPatternSA(...test9)).not.toBe(-1);
-    expect(searchPatternSA(...test10)).not.toBe(-1);
-    expect(searchPatternSA(...test11)).not.toBe(-1);
-    expect(searchPatternSA(...test12)).not.toBe(-1);
+    expect(patternSearchSA(...test0)).toBe(-1);
+    expect(patternSearchSA(...test1)).toBe(-1);
+    expect(patternSearchSA(...test2)).toBe(-1);
+    expect(patternSearchSA(...test3)).not.toBe(-1);
+    expect(patternSearchSA(...test4)).toBe(-1);
+    expect(patternSearchSA(...test5)).not.toBe(-1);
+    expect(patternSearchSA(...test6)).not.toBe(-1);
+    expect(patternSearchSA(...test7)).toBe(0);
+    expect(patternSearchSA(...test8)).not.toBe(-1);
+    expect(patternSearchSA(...test9)).not.toBe(-1);
+    expect(patternSearchSA(...test10)).not.toBe(-1);
+    expect(patternSearchSA(...test11)).not.toBe(-1);
+    expect(patternSearchSA(...test12)).not.toBe(-1);
   });
 
-  occurences(searchPatternKMP, 'KMP');
-  occurences(searchPatternBoyerMoore, 'Boyer-Moore');
-  occurences(searchPatternZAlgorithm, 'Z Algorithm');
+  occurences(patternSearchKMP, 'KMP');
+  occurences(patternSearchBoyerMoore, 'Boyer-Moore');
+  occurences(patternSearchZAlgorithm, 'Z Algorithm');
+  occurences(patternSearchRabinKarp, 'Rabin-Karp Algorithm');
 });

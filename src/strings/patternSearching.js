@@ -11,7 +11,7 @@ import { SuffixArray } from '../datastructures/suffixarray';
  * @param {string} text A string 
  * @param {string} pattern pattern/substring
  */
-export const searchPatternSA = (text, pattern) => {
+export const patternSearchSA = (text, pattern) => {
   if (text == null || pattern == null || pattern === '') return -1;
 
   const n = text.length;
@@ -48,7 +48,7 @@ export const searchPatternSA = (text, pattern) => {
  * 
  * KMP explanation {@link https://www.youtube.com/watch?v=GTJr8OvyEVQ}
  * 
- * Time complexity: O(n)
+ * Time complexity: O(n + m)
  * Space complexity: O(m)
  * 
  * Example:
@@ -75,7 +75,7 @@ export const searchPatternSA = (text, pattern) => {
  * @param {string} text A string 
  * @param {string} pattern pattern/substring
  */
-export const searchPatternKMP = (text, pattern) => {
+export const patternSearchKMP = (text, pattern) => {
   /**
    * For each index i, compute the longest match between the prefix
    * starting at 0 and the suffix starting at i
@@ -136,7 +136,7 @@ export const searchPatternKMP = (text, pattern) => {
  * @param {string} text A string 
  * @param {string} pattern pattern/substring
  */
-export const searchPatternBoyerMoore = (text, pattern) => {
+export const patternSearchBoyerMoore = (text, pattern) => {
   /**
    * Boyer-Moore preprocessing for bad character heuristics and good Suffix heuristics
    * 
@@ -224,7 +224,7 @@ export const searchPatternBoyerMoore = (text, pattern) => {
  * @param {string} text A string 
  * @param {string} pattern pattern/substring
  */
-export const searchPatternZAlgorithm = (text, pattern) => {
+export const patternSearchZAlgorithm = (text, pattern) => {
   if (text == null || pattern == null || pattern === '') return [];
 
   const n = text.length;
@@ -258,6 +258,65 @@ export const searchPatternZAlgorithm = (text, pattern) => {
   const occurences = [];
   for (let i = m + 1; i < len; i++)
     if (Z[i] === m) occurences.push(i - m - 1);
+
+  return occurences;
+};
+
+/**
+ * Find all occurences' start index of matching pattern in the text (including 
+ * overlapping matching) using Rabin Karp algorithm (rolling hash).
+ * 
+ * Time Complexity O(nm) (depending on hash functions)
+ * Space Complexity O(1)
+ * 
+ * Explanation {@link https://www.youtube.com/watch?v=H4VrKHVG5qI}
+ * 
+ * The implementation from William Fiset {@link https://github.com/williamfiset/Algorithms/blob/master/src/main/java/com/williamfiset/algorithms/strings/RabinKarp.java}
+ * ensures the hash values are unique (no collision) so when 2 hashes are equal,
+ * we know for sure the pattern and substring are actually the same. So there's
+ * no need to compare the 2 strings character by character, which improves the
+ * time complexity to O(n + m).
+ * 
+ * @param {string} text A string
+ * @param {string} pattern pattern/substring
+ */
+export const patternSearchRabinKarp = (text, pattern, prime = 100003) => {
+  //--------------------- HELPER funtions ------------------------
+  const computeHash = str => {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++)
+      hash += str.charCodeAt(i) * Math.pow(prime, i);
+    return hash;
+  };
+
+  const recomputeTextHash = (leftInd, rightInd) => {
+    textHash -= text.charCodeAt(leftInd);
+    textHash /= prime;
+    textHash += text.charCodeAt(rightInd) * Math.pow(prime, m - 1);
+  };
+
+  const equalsToPattern = i => {
+    for (let j = 0; j < m; j++, i++)
+      if (pattern[j] !== text[i]) return false;
+    return true;
+  };
+
+  //---------------------- Validate input ------------------------
+  if (text == null || pattern == null || pattern === '') return [];
+
+  const n = text.length;
+  const m = pattern.length;
+  if (m > n) return [];
+
+  // Compute the initial hash values
+  const patternHash = computeHash(pattern);
+  let textHash = computeHash(text.slice(0, m));
+
+  // Compare patternHash with textHash
+  const occurences = [];
+  for (let i = 0; i <= n - m; recomputeTextHash(i, i + m), i++)
+    if (patternHash === textHash && equalsToPattern(i))
+      occurences.push(i);
 
   return occurences;
 };
