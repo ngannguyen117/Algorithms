@@ -23,6 +23,6 @@
  */
 export const countNumberOfSumEqualsXOR = num => {
   let numberOfUnsetBits = 0;
-  for (; num > 0 && (num & 1) === 0; num >>= 1) numberOfUnsetBits++;
+  for (; num > 0; num >>= 1) if ((num & 1) === 0) numberOfUnsetBits++;
   return 1 << numberOfUnsetBits;
 };
