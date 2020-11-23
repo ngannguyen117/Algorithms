@@ -11,5 +11,6 @@ describe('Test operations on subsets XORs', () => {
 
   test('Test computing Sum of all subsets XORs', () => {
     expect(computeSumOfSubsetsXors([1, 5, 6])).toBe(28);
+    expect(computeSumOfSubsetsXors([1, 3])).toBe(6);
   });
 });

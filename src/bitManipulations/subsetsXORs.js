@@ -58,8 +58,7 @@ export const computeXorOfSubsetsXors = arr => arr.length === 1 ? arr[0] : 0;
  *        = 28
  */
 export const computeSumOfSubsetsXors = arr => {
-  let or = 0;
-  for (let elem of arr) or |= elem;
+  const or = arr.reduce((acc, value) => acc | value);
 
-  return or * Math.pow(2, arr.length - 1);
+  return or * (1 << (arr.length - 1));
 };
