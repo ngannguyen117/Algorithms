@@ -22,7 +22,7 @@
  */
 export const countSetBits = number => {
   // Create an 8-bit lookup table
-  const lookup = [0];
+  const lookup = Array(256).fill(0);
   for (let i = 1; i < 256; i++) lookup[i] = (i & 1) + lookup[i >> 1];
 
   // count the number of set bits
@@ -51,7 +51,7 @@ export const countSetBits = number => {
  *  - Case 2:
  *    - There're unset bits in n (ex 0b110, 0b1000)
  *    - Let m be the next left most set bit after b
- *    - If n = 6 (Ob110), b = 2, m = 1; If n = 8 0b1000, b = 4, m = 3
+ *    - If n = 6 (Ob110), b = 3, m = 2; If n = 8 0b1000, b = 4, m = 3
  *    - Let newN = n - (1 << m)
  *    - Total bits of all numbers from 1 to n is newN + 1 + m x (1 << (m - 1)) + countSetBits1ToN(newN)
  * 
