@@ -1,35 +1,21 @@
+import { swap } from './swap';
+
 /**
- * Generate all permutations of an array recursively
+ * Generate all permutations of an array recursively and in place.
  * 
  * O(n!)
  */
 export const generatePermutationRecursive = function* (array) {
   const helper = function* (at) {
-    if (at === n) {
-      const permutation = [];
-      for (let i = 0; i < n; i++) permutation.push(array[picked[i]]);
-      yield permutation;
-    } else {
-      for (let i = 0; i < n; i++)
-        if (!used[i]) { // We can only select elements once
-          // Select this element and track in picked which
-          // element was chosen for this permutations
-          used[i] = true;
-          picked[i] = at;
-          yield *helper(at + 1);
-
-          // Backtrack (unselect element)
-          used[i] = false;
-        }
+    if (at === n) yield array;
+    else for (let i = at; i < n; i++) {
+      [array[i], array[at]] = [array[at], array[i]];
+      yield *helper(at + 1);
+      [array[i], array[at]] = [array[at], array[i]];
     }
   };
 
-  if (!array) return;
-
   const n = array.length;
-  const used = Array(n).fill(false);
-  const picked = [];
-
   yield *helper(0);
 };
 
@@ -85,20 +71,14 @@ export const generatePermutationRecursive = function* (array) {
  *       swap(1, 3) arr = [D, A, C, B]                Arr Size 4: EVEN SIZE swap B & A so B can be in the last position
  */
 export const generatePermutationHeapAlgoRecursive = function* (array) {
-  const swap = (i, j) => {
-    const temp = array[i];
-    array[i] = array[j];
-    array[j] = temp;
-  };
-
   const helper = function* (size) {
     if (size === 1) yield array;
-    for (let i = 0; i < size; i++){
+    for (let i = 0; i < size; i++) {
       yield *helper(size - 1);
 
       // if size is odd, swap 0th i.e (first) and (size-1)th i.e (last) element
-      if ((size & 1) === 1) swap(0, size - 1);
-      else swap(i, size - 1);
+      if (size & 1) swap(array, 0, size - 1);
+      else swap(array, i, size - 1);
     }
   };
 
@@ -126,33 +106,23 @@ export const generatePermutationHeapAlgoRecursive = function* (array) {
  * it will only give us the NEXT ordered permutations (not the full list of permutation).
  */
 export const generatePermutationIterative = function* (array) {
-  const swap = (i, j) => {
-    const temp = array[i];
-    array[i] = array[j];
-    array[j] = temp;
-  };
-
   const n = array.length;
-  let ooo, toSwap;
+  let ooo, i;
   while (true) {
     yield array;
 
     // Look for elem that's out of order (ooo) => need to be swapped
-    ooo = -1;
-    for (let i = n - 2; i >= 0; i--)
-      if (array[i] < array[i + 1]) {
-        ooo = i;
-        break;
-      }
+    ooo = -1, i = n - 2;
+    while (i >= 0 && array[i] >= array[i + 1]) i--;
     if (ooo === -1) return;
 
     // Only swap with the elem that is greater than the ooo elem
-    toSwap = n - 1;
-    while (array[ooo] >= array[toSwap]) toSwap--;
-    swap(ooo++, toSwap);
+    i = n - 1;
+    while (array[ooo] >= array[i]) i--;
+    swap(array, ooo++, i);
 
     // After swaping, reverse all elements to the right of the initial ooo
-    toSwap = n - 1;
-    while (ooo < toSwap) swap(ooo++, toSwap--);
+    i = n - 1;
+    while (ooo < i) swap(array, ooo++, i--);
   }
 };
