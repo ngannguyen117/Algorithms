@@ -112,8 +112,11 @@ export const generatePermutationIterative = function* (array) {
     yield array;
 
     // Look for elem that's out of order (ooo) => need to be swapped
-    ooo = -1, i = n - 2;
-    while (i >= 0 && array[i] >= array[i + 1]) i--;
+    ooo = -1;
+    for (i = n - 2; i >= 0; i--) if (array[i] < array[i + 1]) {
+      ooo = i;
+      break;
+    }
     if (ooo === -1) return;
 
     // Only swap with the elem that is greater than the ooo elem
