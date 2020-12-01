@@ -1,4 +1,7 @@
-import { countSetBits, countSetBits1ToN } from '../countSetBits';
+import { countSetBits,
+  countSetBits1ToNRecursive,
+  countSetBits1ToNIterative
+} from '../countSetBits';
 
 describe('Test count number of set bits', () => {
   test('Test count number of set bits of a number', () => {
@@ -9,15 +12,20 @@ describe('Test count number of set bits', () => {
   });
 
   test('Test count number of set bits of all numbers from 1 to n', () => {
-    expect(countSetBits1ToN(1)).toBe(1);
-    expect(countSetBits1ToN(3)).toBe(4);
-    expect(countSetBits1ToN(7)).toBe(12);
-
-    expect(countSetBits1ToN(2)).toBe(2);
-    expect(countSetBits1ToN(4)).toBe(5);
-    expect(countSetBits1ToN(5)).toBe(7);
-    expect(countSetBits1ToN(6)).toBe(9);
-    expect(countSetBits1ToN(8)).toBe(13);
-    expect(countSetBits1ToN(9)).toBe(15);
+    const oneToN = countSetBits1ToN => {
+      expect(countSetBits1ToN(1)).toBe(1);
+      expect(countSetBits1ToN(3)).toBe(4);
+      expect(countSetBits1ToN(7)).toBe(12);
+  
+      expect(countSetBits1ToN(2)).toBe(2);
+      expect(countSetBits1ToN(4)).toBe(5);
+      expect(countSetBits1ToN(5)).toBe(7);
+      expect(countSetBits1ToN(6)).toBe(9);
+      expect(countSetBits1ToN(8)).toBe(13);
+      expect(countSetBits1ToN(9)).toBe(15);
+    };
+    
+    oneToN(countSetBits1ToNRecursive);
+    oneToN(countSetBits1ToNIterative);
   });
 });

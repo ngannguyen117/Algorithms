@@ -66,7 +66,7 @@ export const countSetBits = number => {
  *  n - (1 << m) + 1     countSetBits1ToN(newN)
  *  6 - (1 << 2) + 1     countSetBits1ToN(2)
  */
-export const countSetBits1ToN = n => {
+export const countSetBits1ToNRecursive = n => {
   if (n === 0) return 0;
 
   // get position of the left most set bit in 1-base
@@ -75,5 +75,25 @@ export const countSetBits1ToN = n => {
 
   const m = b - 1; // next left most set bit
   n = n - (1 << m);
-  return n + 1 + countSetBits1ToN(n) + m * (1 << (m - 1));
+  return n + 1 + countSetBits1ToNRecursive(n) + m * (1 << (m - 1));
+};
+
+// Iterative
+export const countSetBits1ToNIterative = n => {
+  let count = 0;
+
+  while (n > 0) {
+    // get position of the left most set bit in 1-base
+    const b = Math.floor(Math.log2(n)) + 1;
+    if (n === (1 << b) - 1) {
+      count += b * (1 << (b - 1));
+      break;
+    }
+
+    const m = b - 1; // next left most set bit
+    n = n - (1 << m);
+    count += n + 1 + m * (1 << (m - 1));
+  }
+
+  return count;
 };
